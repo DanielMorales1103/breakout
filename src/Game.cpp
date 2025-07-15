@@ -26,10 +26,39 @@ Game::~Game() {
 }
 
 void Game::setup() {
-  SetTargetFPS(60);
-  
-  ball = Rectangle{10, 10, 15, 15};
-  paddle = Rectangle{(float)(screen_width/2) - ball.width*5, (float)screen_height - 15, ball.width*10, 15};
+    SetTargetFPS(60);
+    
+    ball = Rectangle{150, 150, 15, 15};
+    paddle = Rectangle{(float)(screen_width/2) - ball.width*5, (float)screen_height - 15, ball.width*10, 15};
+
+    //crear bloques 
+    int rows = 4;
+    int cols = 10;
+    int blockWidth = screen_width / cols;
+    int blockHeight = 20;
+
+    for (int row = 0; row < rows; ++row) {
+        Color color;
+        switch (row) {
+            case 0: color = RED; break;
+            case 1: color = ORANGE; break;
+            case 2: color = YELLOW; break;
+            case 3: color = GREEN; break;
+            default: color = DARKBLUE; break;
+        }
+        for (int col = 0; col < cols; ++col) {
+            Block block = {
+                Rectangle{
+                    (float)(col * blockWidth),
+                    (float)(row * blockHeight),
+                    (float)(blockWidth - 2),
+                    (float)(blockHeight - 2)
+                },
+                color
+            };
+            bricks.push_back(block);
+        }
+    }
 }
 
 void Game::frame_start() {
@@ -46,20 +75,44 @@ void Game::frame_end() {
 }
 
 void Game::handle_events() {
-  float dT = GetFrameTime();  // seconds
-  if (WindowShouldClose()) {
-    isRunning = false;
-  }
-  if (IsKeyDown(KEY_RIGHT)) {
-    paddle.x += paddle_sx * dT;
-  }
+    float dT = GetFrameTime();  // seconds
+    if (WindowShouldClose()) {
+        isRunning = false;
+    }
+    if (IsKeyDown(KEY_RIGHT)) {
+        paddle.x += paddle_sx * dT;
+    }
 
-  if (IsKeyDown(KEY_LEFT)) {
-    paddle.x -= paddle_sx * dT;
-  }
+    if (IsKeyDown(KEY_LEFT)) {
+        paddle.x -= paddle_sx * dT;
+    }
+
+    if (paddle.x < 0) {
+        paddle.x = 0;
+    }
+    if (paddle.x + paddle.width > screen_width) {
+        paddle.x = screen_width - paddle.width;
+    }
 }
 
 void Game::update() {
+    // Verificar colisiones con bloques
+    for (auto it = bricks.begin(); it != bricks.end(); ) {
+        if (CheckCollisionRecs(ball, it->rect)) {
+            ball_sy *= -1;
+            it = bricks.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+
+    // Revisar victoria
+    if (bricks.empty()) {
+        std::cout << "YOU WIN!" << std::endl;
+        exit(0);
+    }
+
     float dT = GetFrameTime();  // seconds
     if (ball.x >= screen_width) {
         ball_sx *= -1;
@@ -97,6 +150,11 @@ void Game::render() {
     
     DrawRectangleRec(ball, BLACK);
     DrawRectangleRec(paddle, BLACK);
+
+    for (const auto& block : bricks) {
+        DrawRectangleRec(block.rect, block.color);
+    }
+
 }
 
 void Game::clean() {
