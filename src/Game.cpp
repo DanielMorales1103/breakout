@@ -110,11 +110,12 @@ void Game::update() {
     // Revisar victoria
     if (bricks.empty()) {
         std::cout << "YOU WIN!" << std::endl;
+        WaitTime(3.0);
         exit(0);
     }
 
     float dT = GetFrameTime();  // seconds
-    if (ball.x >= screen_width) {
+    if (ball.x + 15 >= screen_width) {
         ball_sx *= -1;
     }
     if (ball.x < 0) {
@@ -123,6 +124,7 @@ void Game::update() {
     if (ball.y >= screen_height) {
         // std::println("YOU FAIL");
         std::cout << "YOU FAIL" << std::endl;
+        WaitTime(3.0);
         exit(1);
     }
     if (CheckCollisionRecs(ball, paddle)) {
