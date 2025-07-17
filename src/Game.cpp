@@ -128,7 +128,7 @@ void Game::update() {
         exit(1);
     }
     if (CheckCollisionRecs(ball, paddle)) {
-        ball_sy *= -1;
+        ball_sy *= -1.05f;
         ball_sx = paddle_sx;
     }
     if (ball.y < 0) {
