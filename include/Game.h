@@ -1,11 +1,6 @@
 #pragma once
-#include <raylib.h>
-#include <vector>
 
-struct Block {
-    Rectangle rect;
-    Color color;
-};
+#include "Scene/Scene.h"
 
 class Game {
 public:
@@ -13,19 +8,24 @@ public:
     ~Game();
 
     void setup();
-    void frame_start();
-    void handle_events();
+    void frameStart();
+    void handleEvents();
     void update();
     void render();
-    void frame_end();
+    void frameEnd();
     void clean();
-    bool running();
+    void run();
+    bool running() const;
+
+    void setScene(Scene* newScene);
+    Scene* getCurrentScene() const;
 
 private:
-    int counter;
     int screen_width;
     int screen_height;
     bool isRunning;
-
-    std::vector<Block> bricks;
+    int frameCount;
+    float dT;
+    float FPS;
+    Scene* currentScene = nullptr;
 };
