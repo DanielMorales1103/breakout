@@ -15,6 +15,14 @@ struct VelocityComponent {
     Vector2 velocity;
 };
 
-struct PaddleComponent {};
-struct BallComponent {};
-struct BlockComponent {};
+struct PaddleComponent { 
+    int dummy = 0; 
+};
+
+struct BlockComponent { 
+    int dummy = 0; 
+};
+
+struct BallComponent { 
+    int dummy = 0; 
+};
