@@ -1,6 +1,7 @@
 #include "Scene/Scene.h"
 #include "Systems/PaddleSystem.h"
 #include "Systems/BallSystem.h"
+#include "Systems/BlockSystem.h"
 #include "Entity.h"
 #include "../components/Components.h"
 #include <raylib.h>
@@ -9,6 +10,7 @@ void Scene::setup() {
     // 1) Registrar tu BallSystem
     addSystem(new PaddleSystem());
     addSystem(new BallSystem());
+    addSystem(new BlockSystem());
 
     // 2) Inicializar todos los sistemas
     for (auto* s : systems) {
@@ -41,6 +43,27 @@ void Scene::setup() {
     ballEntity.addComponent<TransformComponent>(Vector2{ sw*0.5f, sh*0.5f });
     ballEntity.addComponent<VelocityComponent>(Vector2{ 200.0f, 200.0f });
     ballEntity.addComponent<BallComponent>();
+
+    // --- Bloques ---
+    const int rows = 4;
+    const int cols = 10;
+    const float gap    = 4.0f;
+    const float blockW = (sw - (cols - 1) * gap) / cols;
+    const float blockH = 20.0f;
+    const float startY = 40.0f; // margen superior
+
+    for (int rIdx = 0; rIdx < rows; ++rIdx) {
+        for (int cIdx = 0; cIdx < cols; ++cIdx) {
+            float x = cIdx * (blockW + gap);
+            float y = startY + rIdx * (blockH + gap);
+
+            auto e = r.create();
+            Entity block{ e, this };
+            block.addComponent<TransformComponent>( Vector2{ x, y } );
+            block.addComponent<SizeComponent>     ( Vector2{ blockW, blockH } );
+            block.addComponent<BlockComponent>();
+        }
+    }
 }
 
 void Scene::update() {

@@ -51,7 +51,7 @@ public:
                 };
 
                 if (CheckCollisionRecs(ballRec, padRec)) {
-                    v.velocity.y *= -1.1f;
+                    v.velocity.y *= -1.01f;
                     t.position.y = pt.position.y - radius;
                     break;  
                 }

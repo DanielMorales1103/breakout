@@ -26,3 +26,7 @@ struct BlockComponent {
 struct BallComponent { 
     int dummy = 0; 
 };
+
+struct SizeComponent { 
+    Vector2 size; 
+};
