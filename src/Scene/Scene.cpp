@@ -5,12 +5,16 @@
 #include "Entity.h"
 #include "../components/Components.h"
 #include <raylib.h>
+#include "Globals.h"
+#include "Systems/ImGuiSystem.h"
 
 void Scene::setup() {
     // 1) Registrar tu BallSystem
     addSystem(new PaddleSystem());
     addSystem(new BallSystem());
     addSystem(new BlockSystem());
+
+    addSystem(new ImGuiSystem());
 
     // 2) Inicializar todos los sistemas
     for (auto* s : systems) {
@@ -23,7 +27,7 @@ void Scene::setup() {
 
     auto paddleEnt = r.create();
     Entity paddle{ paddleEnt, this };
-
+    paddle.addComponent<NameComponent>(NameComponent{"Paddle"});
     // Centrado horizontal, a 30px del fondo
     paddle.addComponent<TransformComponent>(
         Vector2{ swP*0.5f - PaddleSystem::paddleWidth()*0.5f, shP - 30.0f }
@@ -40,6 +44,7 @@ void Scene::setup() {
 
     auto ent = r.create();
     Entity ballEntity{ ent, this };
+    ballEntity.addComponent<NameComponent>(NameComponent{"Ball"});
     ballEntity.addComponent<TransformComponent>(Vector2{ sw*0.5f, sh*0.5f });
     ballEntity.addComponent<VelocityComponent>(Vector2{ 200.0f, 200.0f });
     ballEntity.addComponent<BallComponent>();
@@ -59,6 +64,7 @@ void Scene::setup() {
 
             auto e = r.create();
             Entity block{ e, this };
+            // block.addComponent<NameComponent>(NameComponent{ "Block" });
             block.addComponent<TransformComponent>( Vector2{ x, y } );
             block.addComponent<SizeComponent>     ( Vector2{ blockW, blockH } );
             block.addComponent<BlockComponent>();
@@ -67,6 +73,7 @@ void Scene::setup() {
 }
 
 void Scene::update() {
+    if (!g_RunUpdate) return;
     for (auto* system : systems) {
         system->update();
     }
