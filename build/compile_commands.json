@@ -19,9 +19,21 @@
 },
 {
   "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
+  "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Scene\\Breackout.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Scene\\Breackout.cpp\"",
+  "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Scene/Breackout.cpp",
+  "output": "CMakeFiles/GAME.dir/src/Scene/Breackout.cpp.obj"
+},
+{
+  "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
   "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Scene\\Scene.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Scene\\Scene.cpp\"",
   "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Scene/Scene.cpp",
   "output": "CMakeFiles/GAME.dir/src/Scene/Scene.cpp.obj"
+},
+{
+  "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
+  "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Scene\\SpriteScene.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Scene\\SpriteScene.cpp\"",
+  "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Scene/SpriteScene.cpp",
+  "output": "CMakeFiles/GAME.dir/src/Scene/SpriteScene.cpp.obj"
 },
 {
   "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
