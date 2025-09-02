@@ -1,6 +1,7 @@
 #include "Game.h"
 #include <raylib.h>
 #include <iostream>
+#include "TextureManager.h"
 
 Game::Game(const char* title, int width, int height)
     : screen_width(width), screen_height(height) {
@@ -48,6 +49,7 @@ void Game::render() {
 }
 
 void Game::clean() {
+    TextureManager::Shutdown();
     if (!WindowShouldClose()) CloseWindow();
     std::cout << "Game Over." << std::endl;
 }
