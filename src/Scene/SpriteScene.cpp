@@ -11,6 +11,9 @@ static const int COLUMNS = 4; // Derecha, Izquierda, Arriba, Abajo
 static const int ROWS    = 4; // <-- si tu hoja tiene 5 frames por dirección
 static const float FPS_ANIM_H = 8.0f;
 static const float FPS_ANIM_V = 8.0f;
+// Factor de velocidad para animación en idle (1.0 = misma velocidad que en movimiento)
+static const float IDLE_FPS_MULT = 1.0f; // si lo quieres más lento, pon 0.6f por ejemplo
+
 
 enum class Dir { Right, Left, Up, Down };
 static Dir   heroDir    = Dir::Right;
@@ -84,8 +87,9 @@ void SpriteScene::onRender() {
 }
 
 void SpriteScene::onUpdate() {
-    float dt = GetFrameTime();
+    const float dt = GetFrameTime();
 
+    // --- Input ---
     float vx = 0.0f, vy = 0.0f;
     if (IsKeyDown(KEY_RIGHT)) { vx += 1.0f; heroDir = Dir::Right; }
     if (IsKeyDown(KEY_LEFT))  { vx -= 1.0f; heroDir = Dir::Left;  }
@@ -94,11 +98,13 @@ void SpriteScene::onUpdate() {
 
     heroMoving = (vx != 0.0f || vy != 0.0f);
 
+    // Normalizar diagonal
     if (heroMoving && vx != 0.0f && vy != 0.0f) {
         const float inv = 1.0f / std::sqrt(2.0f);
         vx *= inv; vy *= inv;
     }
 
+    // --- Movimiento ---
     heroX += vx * heroSpeed * dt;
     heroY += vy * heroSpeed * dt;
 
@@ -110,19 +116,17 @@ void SpriteScene::onUpdate() {
     heroX = fmaxf(margin + halfW, fminf(heroX, GetScreenWidth()  - margin - halfW));
     heroY = fmaxf(margin + halfH, fminf(heroY, GetScreenHeight() - margin - halfH));
 
-    // Animación (usa FPS_H para L/R, FPS_V para U/D)
-    const bool vertical = (heroDir == Dir::Up || heroDir == Dir::Down);
-    const float fps = vertical ? FPS_ANIM_V : FPS_ANIM_H;
-    const float frameTime = 1.0f / fps;
+    // --- Animación (también en idle) ---
+    const bool  vertical = (heroDir == Dir::Up || heroDir == Dir::Down);
+    const float fpsBase  = vertical ? FPS_ANIM_V : FPS_ANIM_H;
+    const float fps      = heroMoving ? fpsBase : fpsBase * IDLE_FPS_MULT;
 
-    if (heroMoving) {
+    if (fps > 0.0f) {
+        const float frameTime = 1.0f / fps;
         heroAcc += dt;
         while (heroAcc >= frameTime) {
             heroAcc -= frameTime;
             heroFrame = (heroFrame + 1) % ROWS; // mismo conteo para todas las dirs
         }
-    } else {
-        heroAcc = 0.0f;
-        heroFrame = 0; // idle (primer frame de la columna de la dir actual)
     }
 }
