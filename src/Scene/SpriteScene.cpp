@@ -1,16 +1,16 @@
 #include "Scene/SpriteScene.h"
 #include "TextureManager.h"  
 #include <raylib.h>
+#include <cmath>
 
 static const char* BG_PATH = "assets/backgrounds/fondo.jpg";
 static const char* HERO_PATH = "assets/sprites/SpriteSheet.png";
 
 // Config de sheet (lógica)
-static const int COLUMNS = 3; // 3 columnas
-static const int ROWS    = 4; // 4 filas
-
-static const float FPS_ANIM_H = 8.0f; 
-static const float FPS_ANIM_V = 8.0f; 
+static const int COLUMNS = 4; // Derecha, Izquierda, Arriba, Abajo
+static const int ROWS    = 4; // <-- si tu hoja tiene 5 frames por dirección
+static const float FPS_ANIM_H = 8.0f;
+static const float FPS_ANIM_V = 8.0f;
 
 enum class Dir { Right, Left, Up, Down };
 static Dir   heroDir    = Dir::Right;
@@ -45,77 +45,48 @@ void SpriteScene::onSetup() {
     FRAME_H = hero.height / ROWS;
 }
 
+// --- ON RENDER (reemplaza la parte del héroe completa) ---
 void SpriteScene::onRender() {
-    // --- Fondo ---
+    // --- Fondo (igual que antes) ---
     const Texture2D bg = TextureManager::GetTexture(BG_PATH);
-    const Rectangle srcBg{0,0,(float)bg.width,(float)bg.height};
-    const Rectangle dstBg{0,0,(float)GetScreenWidth(),(float)GetScreenHeight()};
-    DrawTexturePro(bg, srcBg, dstBg, {0,0}, 0.0f, WHITE);
+    DrawTexturePro(bg, {0,0,(float)bg.width,(float)bg.height},
+                      {0,0,(float)GetScreenWidth(),(float)GetScreenHeight()},
+                      {0,0}, 0.0f, WHITE);
 
     // --- Héroe ---
     const Texture2D hero = TextureManager::GetTexture(HERO_PATH);
 
     int col = 0;
-    int row = 0;
-    bool flipX = false;
-    bool flipY = false;
-
-    // Selección según lo que pediste:
-    // - Horizontal izq/der: columna 1 (index 0), filas 0..3 (4 frames)
-    // - Vertical up/down:  columna 3 (index 2), filas 1..3 (3 frames)
     switch (heroDir) {
-        case Dir::Right:
-            col   = 0;           // 1a columna
-            row   = heroFrame;   // 0..3
-            flipX = false;
-            break;
-        case Dir::Left:
-            col   = 0;           // 1a columna
-            row   = heroFrame;   // 0..3
-            flipX = true;        // flip horizontal para mirar a la izquierda
-            break;
-        case Dir::Down:
-            col   = 2;                       // 3a columna
-            row   = 1 + (heroFrame % 3);     // filas 1..3
-            flipX = false;
-            break;
-        case Dir::Up:
-            col   = 2;                       // 3a columna
-            row   = 1 + (heroFrame % 3);     // filas 1..3
-            flipX = false;
-            flipY = true;                     // opcional: flip vertical si te gusta más la lectura visual
-            break;
+        case Dir::Right: col = 0; break; // columna 1
+        case Dir::Left:  col = 1; break; // columna 2
+        case Dir::Up:    col = 2; break; // columna 3
+        case Dir::Down:  col = 3; break; // columna 4
     }
+    const int row = heroFrame % ROWS; // 0..ROWS-1
 
-    // Rect fuente (con flips si aplica)
     Rectangle srcHero {
         (float)(col * FRAME_W),
         (float)(row * FRAME_H),
         (float)FRAME_W,
         (float)FRAME_H
     };
-    if (flipX) { srcHero.x += FRAME_W; srcHero.width  = -srcHero.width;  }
-    if (flipY) { srcHero.y += FRAME_H; srcHero.height = -srcHero.height; }
 
-    // Rect destino (dibujar centrado, escalar si tu frame es grande/pequeño)
-    const float scale = 0.25f; // ajusta a gusto
+    const float scale = 0.25f;
     const float dstW = FRAME_W * scale;
     const float dstH = FRAME_H * scale;
 
-    Rectangle dstHero {
-        heroX - dstW/2.0f,
-        heroY - dstH/2.0f,
-        dstW, dstH
-    };
+    // Dibujo centrado + pivote al centro (evita “saltos” al cambiar dirección)
+    Rectangle dstHero { heroX, heroY, dstW, dstH };
+    Vector2   origin  { dstW * 0.5f, dstH * 0.5f };
 
-    DrawTexturePro(hero, srcHero, dstHero, {0,0}, 0.0f, WHITE);
+    DrawTexturePro(hero, srcHero, dstHero, origin, 0.0f, WHITE);
 }
+
 void SpriteScene::onUpdate() {
     float dt = GetFrameTime();
 
-    // --- INPUT ---
     float vx = 0.0f, vy = 0.0f;
-
     if (IsKeyDown(KEY_RIGHT)) { vx += 1.0f; heroDir = Dir::Right; }
     if (IsKeyDown(KEY_LEFT))  { vx -= 1.0f; heroDir = Dir::Left;  }
     if (IsKeyDown(KEY_DOWN))  { vy += 1.0f; heroDir = Dir::Down;  }
@@ -123,41 +94,35 @@ void SpriteScene::onUpdate() {
 
     heroMoving = (vx != 0.0f || vy != 0.0f);
 
-    // Normalizar diagonal
-    if (heroMoving && std::fabs(vx) > 0.0f && std::fabs(vy) > 0.0f) {
+    if (heroMoving && vx != 0.0f && vy != 0.0f) {
         const float inv = 1.0f / std::sqrt(2.0f);
         vx *= inv; vy *= inv;
     }
 
-    // Mover
     heroX += vx * heroSpeed * dt;
     heroY += vy * heroSpeed * dt;
 
-    // Limites simples
+    // Clamp considerando tamaño dibujado
+    const float scale = 0.25f;
+    const float halfW = (FRAME_W * scale) * 0.5f;
+    const float halfH = (FRAME_H * scale) * 0.5f;
     const float margin = 8.0f;
-    heroX = fmaxf(margin, fminf(heroX, GetScreenWidth()  - margin));
-    heroY = fmaxf(margin, fminf(heroY, GetScreenHeight() - margin));
+    heroX = fmaxf(margin + halfW, fminf(heroX, GetScreenWidth()  - margin - halfW));
+    heroY = fmaxf(margin + halfH, fminf(heroY, GetScreenHeight() - margin - halfH));
 
-    // --- ANIMACIÓN ---
-    // Horizontal → 4 frames (filas 0..3) en la columna 0
-    // Vertical   → 3 frames (filas 1..3) en la columna 2
-    const float fps = (heroDir == Dir::Up || heroDir == Dir::Down) ? FPS_ANIM_V : FPS_ANIM_H;
+    // Animación (usa FPS_H para L/R, FPS_V para U/D)
+    const bool vertical = (heroDir == Dir::Up || heroDir == Dir::Down);
+    const float fps = vertical ? FPS_ANIM_V : FPS_ANIM_H;
     const float frameTime = 1.0f / fps;
 
     if (heroMoving) {
         heroAcc += dt;
         while (heroAcc >= frameTime) {
             heroAcc -= frameTime;
-            // Para horizontal usamos 0..3, para vertical solo 0..2
-            if (heroDir == Dir::Up || heroDir == Dir::Down) {
-                heroFrame = (heroFrame + 1) % 3; // 3 frames
-            } else {
-                heroFrame = (heroFrame + 1) % 4; // 4 frames
-            }
+            heroFrame = (heroFrame + 1) % ROWS; // mismo conteo para todas las dirs
         }
     } else {
-        // Idle: frame base
         heroAcc = 0.0f;
-        heroFrame = 0;
+        heroFrame = 0; // idle (primer frame de la columna de la dir actual)
     }
 }
