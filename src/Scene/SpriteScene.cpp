@@ -5,6 +5,11 @@
 
 static const char* BG_PATH = "assets/backgrounds/fondo.jpg";
 static const char* HERO_PATH = "assets/sprites/SpriteSheet.png";
+static const char* OCTO_PATH   = "assets/sprites/pulpo.png";
+static const char* MERMAN_PATH = "assets/sprites/sirena.png";
+
+static int NUM_OCTO   = 6;
+static int NUM_SIRENA = 3;
 
 // Config de sheet (lógica)
 static const int COLUMNS = 4; // Derecha, Izquierda, Arriba, Abajo
@@ -31,6 +36,41 @@ static float heroSpeed = 200.0f;    // px/s
 static int FRAME_W = 0;
 static int FRAME_H = 0;
 
+struct Enemy {
+    const char* path;
+    int columns = 4;
+    int rows    = 4;
+    int frameW = 0, frameH = 0;
+
+    int offsetX = 0, offsetY = 0;
+    int spacingX = 0, spacingY = 0;
+
+    int   frame = 0;
+    float acc   = 0.0f;
+    float fps   = 6.0f;
+
+    float x = 0, y = 0;
+    float speed = 60.0f;
+    float scale = 0.30f;
+    Vector2 target{0,0};
+    float retargetTimer = 0.0f;
+};
+
+static std::vector<Enemy> gEnemies;
+
+static float frand(float a, float b) {
+    return a + (b - a) * (GetRandomValue(0, 10000) / 10000.0f);
+}
+static void EnemyPickNewTarget(Enemy& e) {
+    const float halfW = (e.frameW * e.scale) * 0.5f;
+    const float halfH = (e.frameH * e.scale) * 0.5f;
+    const float margin = 8.0f;
+
+    e.target.x = frand(margin + halfW, GetScreenWidth()  - margin - halfW);
+    e.target.y = frand(margin + halfH, GetScreenHeight() - margin - halfH);
+    e.retargetTimer = frand(1.2f, 3.5f);
+}
+
 void SpriteScene::onSetup() {
     TextureManager::LoadTexture(BG_PATH);
     TextureManager::LoadTexture(HERO_PATH);
@@ -46,15 +86,97 @@ void SpriteScene::onSetup() {
     const Texture2D hero = TextureManager::GetTexture(HERO_PATH);
     FRAME_W = hero.width  / COLUMNS;
     FRAME_H = hero.height / ROWS;
+
+    // --- Enemigos ---
+    gEnemies.clear();
+    TextureManager::LoadTexture(OCTO_PATH);
+    TextureManager::LoadTexture(MERMAN_PATH);
+    SetTextureFilter(TextureManager::GetTexture(OCTO_PATH),   TEXTURE_FILTER_POINT);
+    SetTextureFilter(TextureManager::GetTexture(MERMAN_PATH), TEXTURE_FILTER_POINT);
+    gEnemies.reserve(NUM_OCTO + NUM_SIRENA);
+
+    // Pulpos 
+    for (int i = 0; i < NUM_OCTO; ++i) {
+        Enemy e;
+        e.path    = OCTO_PATH;
+        e.columns = 4;
+        e.rows    = 4;
+
+        const Texture2D t = TextureManager::GetTexture(e.path);
+        e.frameH = t.height / e.rows - 5;  
+        e.frameW = e.frameH;                
+
+        const int usedW = e.columns * e.frameW;
+        const int usedH = e.rows    * e.frameH;
+        e.offsetX = (t.width  - usedW) > 0 ? (t.width  - usedW) / 2 : 0;
+        e.offsetY = (t.height - usedH) > 0 ? (t.height - usedH) / 2 : 0;
+
+        e.fps   = 6.0f;
+        e.speed = 50.0f;
+        e.scale = 0.30f;
+
+        e.x = frand(80.0f, GetScreenWidth()  - 80.0f);
+        e.y = frand(80.0f, GetScreenHeight() - 80.0f);
+
+        EnemyPickNewTarget(e);
+        gEnemies.push_back(e);
+    }
+    //Sirenas
+    for (int i = 0; i < NUM_SIRENA; ++i) {
+        Enemy e;
+        e.path    = MERMAN_PATH;
+        e.columns = 4;
+        e.rows    = 3;
+
+        const Texture2D t = TextureManager::GetTexture(e.path);
+        e.frameH = t.height / e.rows - 5;   
+        e.frameW = 251;                     
+
+        const int usedW = e.columns * e.frameW;
+        const int usedH = e.rows    * e.frameH;
+        e.offsetX = (t.width  - usedW) > 0 ? (t.width  - usedW) / 2 : 0;
+        e.offsetY = (t.height - usedH) > 0 ? (t.height - usedH) / 2 : 0;
+
+        e.fps   = 6.0f;
+        e.speed = 70.0f;
+        e.scale = 0.30f;
+
+        e.x = frand(80.0f, GetScreenWidth()  - 80.0f);
+        e.y = frand(80.0f, GetScreenHeight() - 80.0f);
+
+        EnemyPickNewTarget(e);
+        gEnemies.push_back(e);
+    }
 }
 
-// --- ON RENDER (reemplaza la parte del héroe completa) ---
+// --- ON RENDER ---
 void SpriteScene::onRender() {
-    // --- Fondo (igual que antes) ---
     const Texture2D bg = TextureManager::GetTexture(BG_PATH);
     DrawTexturePro(bg, {0,0,(float)bg.width,(float)bg.height},
                       {0,0,(float)GetScreenWidth(),(float)GetScreenHeight()},
                       {0,0}, 0.0f, WHITE);
+    // --- Enemigos ---
+    for (const auto& e : gEnemies) {
+        const Texture2D tex = TextureManager::GetTexture(e.path);
+
+        const int colE = e.frame % e.columns;
+        const int rowE = e.frame / e.columns;
+
+        Rectangle srcE{
+            (float)(e.offsetX + colE * e.frameW),
+            (float)(e.offsetY + rowE * e.frameH),
+            (float)e.frameW,
+            (float)e.frameH
+        };
+
+        const float dstWE = e.frameW * e.scale;
+        const float dstHE = e.frameH * e.scale;
+
+        Rectangle dstE{ e.x, e.y, dstWE, dstHE };
+        Vector2   originE{ dstWE * 0.5f, dstHE * 0.5f };
+
+        DrawTexturePro(tex, srcE, dstE, originE, 0.0f, WHITE);
+    }
 
     // --- Héroe ---
     const Texture2D hero = TextureManager::GetTexture(HERO_PATH);
@@ -127,6 +249,40 @@ void SpriteScene::onUpdate() {
         while (heroAcc >= frameTime) {
             heroAcc -= frameTime;
             heroFrame = (heroFrame + 1) % ROWS; // mismo conteo para todas las dirs
+        }
+    }
+    // --- Enemigos (wander + idle loop) ---
+    for (auto& e : gEnemies) {
+        // retarget por tiempo
+        e.retargetTimer -= dt;
+        if (e.retargetTimer <= 0.0f) {
+            EnemyPickNewTarget(e);
+        }
+
+        // mover hacia el destino
+        Vector2 d{ e.target.x - e.x, e.target.y - e.y };
+        float len  = std::sqrt(d.x*d.x + d.y*d.y);
+        float step = e.speed * dt;
+
+        if (len > 1e-3f) {
+            if (step >= len) {
+                e.x = e.target.x; e.y = e.target.y;
+                EnemyPickNewTarget(e);
+            } else {
+                d.x /= len; d.y /= len;
+                e.x += d.x * step;
+                e.y += d.y * step;
+            }
+        } else {
+            EnemyPickNewTarget(e);
+        }
+
+        // animación idle continua
+        const float frameTimeE = 1.0f / e.fps;
+        e.acc += dt;
+        while (e.acc >= frameTimeE) {
+            e.acc -= frameTimeE;
+            e.frame = (e.frame + 1) % (e.columns * e.rows);
         }
     }
 }
