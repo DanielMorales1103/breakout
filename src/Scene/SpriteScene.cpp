@@ -3,7 +3,7 @@
 #include <raylib.h>
 #include <cmath>
 
-static const char* BG_PATH = "assets/backgrounds/fondo.jpg";
+static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
 static const char* HERO_PATH = "assets/sprites/SpriteSheet.png";
 static const char* OCTO_PATH   = "assets/sprites/pulpo.png";
 static const char* MERMAN_PATH = "assets/sprites/sirena.png";
