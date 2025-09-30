@@ -103,7 +103,7 @@ void SpriteScene::onSetup() {
         e.rows    = 4;
 
         const Texture2D t = TextureManager::GetTexture(e.path);
-        e.frameH = t.height / e.rows - 5;  
+        e.frameH = t.height / e.rows - 10;  
         e.frameW = e.frameH;                
 
         const int usedW = e.columns * e.frameW;
@@ -129,8 +129,8 @@ void SpriteScene::onSetup() {
         e.rows    = 3;
 
         const Texture2D t = TextureManager::GetTexture(e.path);
-        e.frameH = t.height / e.rows - 5;   
-        e.frameW = 251;                     
+        e.frameH = t.height / e.rows;   
+        e.frameW = 265;                     
 
         const int usedW = e.columns * e.frameW;
         const int usedH = e.rows    * e.frameH;
