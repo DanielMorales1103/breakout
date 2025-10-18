@@ -2,22 +2,17 @@
 #include "TextureManager.h"  
 #include <raylib.h>
 #include <cmath>
+#include "Systems/InputSystem.h"
+#include "Systems/MovementSystem.h"
+#include "Systems/AnimationSystem.h"
+#include "Systems/EnemyAISystem.h"
+#include "Systems/RenderSystem.h"
+#include "../components/Components.h"
+
 
 static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
-static const char* HERO_PATH = "assets/sprites/SpriteSheet.png";
-static const char* OCTO_PATH   = "assets/sprites/pulpo.png";
-static const char* MERMAN_PATH = "assets/sprites/sirena.png";
-
-static int NUM_OCTO   = 6;
-static int NUM_SIRENA = 3;
-
-// Config de sheet (lógica)
-static const int COLUMNS = 4; // Derecha, Izquierda, Arriba, Abajo
-static const int ROWS    = 4; // <-- si tu hoja tiene 5 frames por dirección
-static const float FPS_ANIM_H = 8.0f;
-static const float FPS_ANIM_V = 8.0f;
-// Factor de velocidad para animación en idle (1.0 = misma velocidad que en movimiento)
-static const float IDLE_FPS_MULT = 1.0f; // si lo quieres más lento, pon 0.6f por ejemplo
+static const char* HERO_PATH = "assets/sprites/mer_8_chars1.png";
+static const char* ENEMY_PATH = "assets/sprites/enemies.png";
 
 
 enum class Dir { Right, Left, Up, Down };
@@ -25,264 +20,158 @@ static Dir   heroDir    = Dir::Right;
 static bool  heroMoving = false;
 
 // Estado de animación
-static int   heroFrame  = 0;   // 0..3 (la usaremos distinta según dir)
-static float heroAcc    = 0.0f;
+static int   heroFrame  = 0;   
 
 // Estado de juego (posición/velocidad)
-static float heroX, heroY;          // centro de destino
-static float heroSpeed = 200.0f;    // px/s
+static float heroX, heroY;          
 
-// Calculados al cargar
-static int FRAME_W = 0;
-static int FRAME_H = 0;
-
-struct Enemy {
-    const char* path;
-    int columns = 4;
-    int rows    = 4;
-    int frameW = 0, frameH = 0;
-
-    int offsetX = 0, offsetY = 0;
-    int spacingX = 0, spacingY = 0;
-
-    int   frame = 0;
-    float acc   = 0.0f;
-    float fps   = 6.0f;
-
-    float x = 0, y = 0;
-    float speed = 60.0f;
-    float scale = 0.30f;
-    Vector2 target{0,0};
-    float retargetTimer = 0.0f;
-};
-
-static std::vector<Enemy> gEnemies;
-
-static float frand(float a, float b) {
-    return a + (b - a) * (GetRandomValue(0, 10000) / 10000.0f);
-}
-static void EnemyPickNewTarget(Enemy& e) {
-    const float halfW = (e.frameW * e.scale) * 0.5f;
-    const float halfH = (e.frameH * e.scale) * 0.5f;
-    const float margin = 8.0f;
-
-    e.target.x = frand(margin + halfW, GetScreenWidth()  - margin - halfW);
-    e.target.y = frand(margin + halfH, GetScreenHeight() - margin - halfH);
-    e.retargetTimer = frand(1.2f, 3.5f);
-}
 
 void SpriteScene::onSetup() {
+    // --- Cargar texturas ---
     TextureManager::LoadTexture(BG_PATH);
     TextureManager::LoadTexture(HERO_PATH);
+    TextureManager::LoadTexture(ENEMY_PATH);
 
-    SetTextureFilter(TextureManager::GetTexture(BG_PATH),  TEXTURE_FILTER_POINT);
-    SetTextureFilter(TextureManager::GetTexture(HERO_PATH), TEXTURE_FILTER_POINT);
+    SetTextureFilter(TextureManager::GetTexture(BG_PATH),    TEXTURE_FILTER_POINT);
+    SetTextureFilter(TextureManager::GetTexture(HERO_PATH),  TEXTURE_FILTER_POINT);
+    SetTextureFilter(TextureManager::GetTexture(ENEMY_PATH), TEXTURE_FILTER_POINT);
 
-    // Centrar al héroe
-    heroX = GetScreenWidth()  * 0.5f;
-    heroY = GetScreenHeight() * 0.5f;
+    // --- Registrar systems (update en orden; render va al final) ---
+    addSystem(new InputSystem());
+    addSystem(new MovementSystem());
+    addSystem(new EnemyAISystem());
+    addSystem(new AnimationSystem());
+    addSystem(new RenderSystem());
 
-    // Calcular tamaño de frame desde la textura
-    const Texture2D hero = TextureManager::GetTexture(HERO_PATH);
-    FRAME_W = hero.width  / COLUMNS;
-    FRAME_H = hero.height / ROWS;
+    // ---------- ENTIDAD: Fondo ----------
+    {
+        auto e = r.create();
+        r.emplace<TransformComponent>(e, Vector2{0, 0});
 
-    // --- Enemigos ---
-    gEnemies.clear();
-    TextureManager::LoadTexture(OCTO_PATH);
-    TextureManager::LoadTexture(MERMAN_PATH);
-    SetTextureFilter(TextureManager::GetTexture(OCTO_PATH),   TEXTURE_FILTER_POINT);
-    SetTextureFilter(TextureManager::GetTexture(MERMAN_PATH), TEXTURE_FILTER_POINT);
-    gEnemies.reserve(NUM_OCTO + NUM_SIRENA);
-
-    // Pulpos 
-    for (int i = 0; i < NUM_OCTO; ++i) {
-        Enemy e;
-        e.path    = OCTO_PATH;
-        e.columns = 4;
-        e.rows    = 4;
-
-        const Texture2D t = TextureManager::GetTexture(e.path);
-        e.frameH = t.height / e.rows - 10;  
-        e.frameW = e.frameH;                
-
-        const int usedW = e.columns * e.frameW;
-        const int usedH = e.rows    * e.frameH;
-        e.offsetX = (t.width  - usedW) > 0 ? (t.width  - usedW) / 2 : 0;
-        e.offsetY = (t.height - usedH) > 0 ? (t.height - usedH) / 2 : 0;
-
-        e.fps   = 6.0f;
-        e.speed = 50.0f;
-        e.scale = 0.30f;
-
-        e.x = frand(80.0f, GetScreenWidth()  - 80.0f);
-        e.y = frand(80.0f, GetScreenHeight() - 80.0f);
-
-        EnemyPickNewTarget(e);
-        gEnemies.push_back(e);
+        const Texture2D bg = TextureManager::GetTexture(BG_PATH);
+        r.emplace<SpriteComponent>(e, SpriteComponent{
+            BG_PATH,
+            Rectangle{0, 0, (float)bg.width, (float)bg.height},
+            Vector2{(float)bg.width, (float)bg.height}
+        });
+        r.emplace<BackgroundTag>(e);
     }
-    //Sirenas
-    for (int i = 0; i < NUM_SIRENA; ++i) {
-        Enemy e;
-        e.path    = MERMAN_PATH;
-        e.columns = 4;
-        e.rows    = 3;
 
-        const Texture2D t = TextureManager::GetTexture(e.path);
-        e.frameH = t.height / e.rows;   
-        e.frameW = 265;                     
+    // ---------- ENTIDAD: Player (morado sin sombra: columnas 7–9, filas 5–8) ----------
+    {
+        auto e = r.create();
+        r.emplace<TransformComponent>(e, Vector2{
+            (float)GetScreenWidth() * 0.5f,
+            (float)GetScreenHeight() * 0.5f
+        });
+        auto &pt = r.get<TransformComponent>(e);
+        pt.scale = 3.0f;
 
-        const int usedW = e.columns * e.frameW;
-        const int usedH = e.rows    * e.frameH;
-        e.offsetX = (t.width  - usedW) > 0 ? (t.width  - usedW) / 2 : 0;
-        e.offsetY = (t.height - usedH) > 0 ? (t.height - usedH) / 2 : 0;
+        r.emplace<VelocityComponent>(e, Vector2{0, 0});
+        r.emplace<SpriteComponent>(e, SpriteComponent{
+            HERO_PATH,
+            Rectangle{ 6*26.0f, 4*46.0f, 26.0f, 46.0f },   // primer frame del bloque
+            Vector2{26.0f, 46.0f}
+        });
+        r.emplace<AnimatorComponent>(e, AnimatorComponent{
+            /*columns=*/3, /*rows=*/4, /*fps=*/8.0f,
+            /*frame=*/0, /*acc=*/0.0f, /*moving=*/false,
+            /*facing=*/AnimatorComponent::Down,
+            /*baseCol=*/6, /*baseRow=*/4
+        });
+        r.emplace<BoundsClampComponent>(e, BoundsClampComponent{8.0f});
+        r.emplace<PlayerTag>(e);
+    }
 
-        e.fps   = 6.0f;
-        e.speed = 70.0f;
-        e.scale = 0.30f;
+    // ---------- ENEMIGOS: spawns en esquinas, lejos del player ----------
+    {
+        const int sw = GetScreenWidth();
+        const int sh = GetScreenHeight();
+        const float margin = 40.0f;   // separa del borde
+        const float minDistFromPlayer = 200.0f;
 
-        e.x = frand(80.0f, GetScreenWidth()  - 80.0f);
-        e.y = frand(80.0f, GetScreenHeight() - 80.0f);
+        // Posición del player (la acabamos de crear arriba)
+        Vector2 playerPos { (float)sw * 0.5f, (float)sh * 0.5f };
+        {
+            auto pv = r.view<PlayerTag, TransformComponent>();
+            pv.each([&](TransformComponent& t){ playerPos = t.position; });
+        }
 
-        EnemyPickNewTarget(e);
-        gEnemies.push_back(e);
+        // 4 esquinas
+        Vector2 corners[4] = {
+            { margin,        margin        },   // TL
+            { sw - margin,   margin        },   // TR
+            { margin,        sh - margin   },   // BL
+            { sw - margin,   sh - margin   }    // BR
+        };
+
+        auto sqr = [](float x){ return x*x; };
+        auto dist2 = [&](Vector2 a, Vector2 b){
+            return sqr(a.x-b.x) + sqr(a.y-b.y);
+        };
+
+        const int ENEMIES_COUNT = 4;  // sube si quieres; si >4, cicla esquinas
+        for (int i = 0; i < ENEMIES_COUNT; ++i) {
+            // elige esquina por índice y, si está muy cerca del player, usa la opuesta
+            int idx = i % 4;
+            Vector2 pos = corners[idx];
+            if (dist2(pos, playerPos) < minDistFromPlayer*minDistFromPlayer) {
+                pos = corners[(idx + 2) % 4]; // esquina opuesta
+            }
+
+            auto e = r.create();
+            r.emplace<TransformComponent>(e, pos);
+            auto &tr = r.get<TransformComponent>(e);
+            tr.scale = 3.0f;
+
+            r.emplace<VelocityComponent>(e, Vector2{0, 0});
+            r.emplace<SpriteComponent>(e, SpriteComponent{
+                ENEMY_PATH,
+                Rectangle{ 0*26.0f, 0*46.0f, 26.0f, 46.0f }, // primer frame del primer bloque del atlas
+                Vector2{26.0f, 46.0f}
+            });
+            r.emplace<AnimatorComponent>(e, AnimatorComponent{
+                /*columns=*/3, /*rows=*/4, /*fps=*/6.0f,
+                /*frame=*/0, /*acc=*/0.0f, /*moving=*/false,
+                /*facing=*/AnimatorComponent::Down,
+                /*baseCol=*/0, /*baseRow=*/0   // primer cuadrante del atlas
+            });
+
+            // seguir al player
+            r.emplace<FollowAIComponent>(e, FollowAIComponent{
+                /*speed=*/50.0f, /*stopRadius=*/0.0f
+            });
+
+            r.emplace<EnemyTag>(e);
+        }
     }
 }
 
 // --- ON RENDER ---
-void SpriteScene::onRender() {
-    const Texture2D bg = TextureManager::GetTexture(BG_PATH);
-    DrawTexturePro(bg, {0,0,(float)bg.width,(float)bg.height},
-                      {0,0,(float)GetScreenWidth(),(float)GetScreenHeight()},
-                      {0,0}, 0.0f, WHITE);
-    // --- Enemigos ---
-    for (const auto& e : gEnemies) {
-        const Texture2D tex = TextureManager::GetTexture(e.path);
-
-        const int colE = e.frame % e.columns;
-        const int rowE = e.frame / e.columns;
-
-        Rectangle srcE{
-            (float)(e.offsetX + colE * e.frameW),
-            (float)(e.offsetY + rowE * e.frameH),
-            (float)e.frameW,
-            (float)e.frameH
-        };
-
-        const float dstWE = e.frameW * e.scale;
-        const float dstHE = e.frameH * e.scale;
-
-        Rectangle dstE{ e.x, e.y, dstWE, dstHE };
-        Vector2   originE{ dstWE * 0.5f, dstHE * 0.5f };
-
-        DrawTexturePro(tex, srcE, dstE, originE, 0.0f, WHITE);
-    }
-
-    // --- Héroe ---
-    const Texture2D hero = TextureManager::GetTexture(HERO_PATH);
-
-    int col = 0;
-    switch (heroDir) {
-        case Dir::Right: col = 0; break; // columna 1
-        case Dir::Left:  col = 1; break; // columna 2
-        case Dir::Up:    col = 2; break; // columna 3
-        case Dir::Down:  col = 3; break; // columna 4
-    }
-    const int row = heroFrame % ROWS; // 0..ROWS-1
-
-    Rectangle srcHero {
-        (float)(col * FRAME_W),
-        (float)(row * FRAME_H),
-        (float)FRAME_W,
-        (float)FRAME_H
-    };
-
-    const float scale = 0.25f;
-    const float dstW = FRAME_W * scale;
-    const float dstH = FRAME_H * scale;
-
-    // Dibujo centrado + pivote al centro (evita “saltos” al cambiar dirección)
-    Rectangle dstHero { heroX, heroY, dstW, dstH };
-    Vector2   origin  { dstW * 0.5f, dstH * 0.5f };
-
-    DrawTexturePro(hero, srcHero, dstHero, origin, 0.0f, WHITE);
-}
+void SpriteScene::onRender() {}
 
 void SpriteScene::onUpdate() {
     const float dt = GetFrameTime();
 
-    // --- Input ---
-    float vx = 0.0f, vy = 0.0f;
-    if (IsKeyDown(KEY_RIGHT)) { vx += 1.0f; heroDir = Dir::Right; }
-    if (IsKeyDown(KEY_LEFT))  { vx -= 1.0f; heroDir = Dir::Left;  }
-    if (IsKeyDown(KEY_DOWN))  { vy += 1.0f; heroDir = Dir::Down;  }
-    if (IsKeyDown(KEY_UP))    { vy -= 1.0f; heroDir = Dir::Up;    }
+    auto pview = r.view<PlayerTag, TransformComponent, VelocityComponent, AnimatorComponent>();
+    bool synced = false;
+    pview.each([&](TransformComponent& t, VelocityComponent& v, AnimatorComponent& a) {
+        heroX = t.position.x;
+        heroY = t.position.y;
+        
 
-    heroMoving = (vx != 0.0f || vy != 0.0f);
+        // mover/idle para tu animación vieja
+        heroMoving = (fabsf(v.velocity.x) > 0.001f || fabsf(v.velocity.y) > 0.001f);
 
-    // Normalizar diagonal
-    if (heroMoving && vx != 0.0f && vy != 0.0f) {
-        const float inv = 1.0f / std::sqrt(2.0f);
-        vx *= inv; vy *= inv;
-    }
-
-    // --- Movimiento ---
-    heroX += vx * heroSpeed * dt;
-    heroY += vy * heroSpeed * dt;
-
-    // Clamp considerando tamaño dibujado
-    const float scale = 0.25f;
-    const float halfW = (FRAME_W * scale) * 0.5f;
-    const float halfH = (FRAME_H * scale) * 0.5f;
-    const float margin = 8.0f;
-    heroX = fmaxf(margin + halfW, fminf(heroX, GetScreenWidth()  - margin - halfW));
-    heroY = fmaxf(margin + halfH, fminf(heroY, GetScreenHeight() - margin - halfH));
-
-    // --- Animación (también en idle) ---
-    const bool  vertical = (heroDir == Dir::Up || heroDir == Dir::Down);
-    const float fpsBase  = vertical ? FPS_ANIM_V : FPS_ANIM_H;
-    const float fps      = heroMoving ? fpsBase : fpsBase * IDLE_FPS_MULT;
-
-    if (fps > 0.0f) {
-        const float frameTime = 1.0f / fps;
-        heroAcc += dt;
-        while (heroAcc >= frameTime) {
-            heroAcc -= frameTime;
-            heroFrame = (heroFrame + 1) % ROWS; // mismo conteo para todas las dirs
+        // mapear facing del Animator a tu Dir
+        switch (a.facing) {
+            case AnimatorComponent::Up:    heroDir = Dir::Up;    break;
+            case AnimatorComponent::Down:  heroDir = Dir::Down;  break;
+            case AnimatorComponent::Left:  heroDir = Dir::Left;  break;
+            case AnimatorComponent::Right: heroDir = Dir::Right; break;
         }
-    }
-    // --- Enemigos (wander + idle loop) ---
-    for (auto& e : gEnemies) {
-        // retarget por tiempo
-        e.retargetTimer -= dt;
-        if (e.retargetTimer <= 0.0f) {
-            EnemyPickNewTarget(e);
-        }
+        heroFrame = a.frame; 
+        synced = true;
+    });    
 
-        // mover hacia el destino
-        Vector2 d{ e.target.x - e.x, e.target.y - e.y };
-        float len  = std::sqrt(d.x*d.x + d.y*d.y);
-        float step = e.speed * dt;
-
-        if (len > 1e-3f) {
-            if (step >= len) {
-                e.x = e.target.x; e.y = e.target.y;
-                EnemyPickNewTarget(e);
-            } else {
-                d.x /= len; d.y /= len;
-                e.x += d.x * step;
-                e.y += d.y * step;
-            }
-        } else {
-            EnemyPickNewTarget(e);
-        }
-
-        // animación idle continua
-        const float frameTimeE = 1.0f / e.fps;
-        e.acc += dt;
-        while (e.acc >= frameTimeE) {
-            e.acc -= frameTimeE;
-            e.frame = (e.frame + 1) % (e.columns * e.rows);
-        }
-    }
 }

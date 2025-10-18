@@ -1,5 +1,4 @@
 #include "Game.h"
-#include "Scene/BreakoutScene.h"
 #include "Scene/SpriteScene.h"
 
 int main() {

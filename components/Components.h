@@ -8,11 +8,45 @@ struct NameComponent {
 };
 
 struct TransformComponent {
-    Vector2 position;
+    Vector2 position{0,0};
+    float rotation = 0.0f;
+    float scale = 1.0f;
+};
+
+struct SpriteComponent {
+    std::string texturePath; 
+    Rectangle src{0,0,0,0}; 
+    Vector2 sizePx{0,0};     
+};
+
+struct AnimatorComponent {
+    int columns = 1;
+    int rows = 1;
+    float fps = 0.0f;
+    int frame = 0;
+    float acc = 0.0f;
+    bool moving = false;
+    enum Facing { Right, Left, Up, Down } facing = Right;
+
+    int baseCol = 0;   
+    int baseRow = 0;
+};
+
+struct PlayerTag {};
+struct EnemyTag {};
+
+struct WanderAIComponent {
+    Vector2 target{0,0};
+    float retargetTimer = 0.0f;
+    float speed = 60.0f;
+};
+
+struct BoundsClampComponent {
+    float margin = 0.0f;
 };
 
 struct VelocityComponent {
-    Vector2 velocity;
+    Vector2 velocity{0,0};
 };
 
 struct PaddleComponent { 
@@ -30,3 +64,11 @@ struct BallComponent {
 struct SizeComponent { 
     Vector2 size; 
 };
+
+struct BackgroundTag {};
+
+struct FollowAIComponent {
+    float speed = 60.0f;     
+    float stopRadius = 0.0f; 
+};
+
