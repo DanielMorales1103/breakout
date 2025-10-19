@@ -72,3 +72,21 @@ struct FollowAIComponent {
     float stopRadius = 0.0f; 
 };
 
+struct TilesetComponent {
+    const char* texturePath = nullptr;
+    Vector2 tileSize{16,16};
+    int columns = 0;
+    int rows    = 0;
+    int margin  = 0;
+    int spacing = 0;
+
+    Rectangle clip{0,0,0,0};
+};
+
+struct TilemapComponent {
+    int width  = 0;              // celdas
+    int height = 0;              // celdas
+    std::vector<int> tiles;      // índice de tile en el atlas; -1 = vacío
+};
+
+struct TilemapTag {}; 

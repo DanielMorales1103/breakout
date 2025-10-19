@@ -8,11 +8,15 @@
 #include "Systems/EnemyAISystem.h"
 #include "Systems/RenderSystem.h"
 #include "../components/Components.h"
+#include "Systems/TilemapLoaderSystem.h"
+#include "Systems/TilemapRenderSystem.h"
+#include "Systems/AutotileSystem.h"
 
 
 static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
 static const char* HERO_PATH = "assets/sprites/mer_8_chars1.png";
 static const char* ENEMY_PATH = "assets/sprites/enemies.png";
+static const char* TILES = "assets/backgrounds/tf_atlantis_tiles.png";
 
 
 enum class Dir { Right, Left, Up, Down };
@@ -41,20 +45,74 @@ void SpriteScene::onSetup() {
     addSystem(new MovementSystem());
     addSystem(new EnemyAISystem());
     addSystem(new AnimationSystem());
+    addSystem(new TilemapLoaderSystem());
+    addSystem(new AutotileSystem());     
+    addSystem(new TilemapRenderSystem());
     addSystem(new RenderSystem());
 
     // ---------- ENTIDAD: Fondo ----------
-    {
-        auto e = r.create();
-        r.emplace<TransformComponent>(e, Vector2{0, 0});
+    // {
+    //     auto e = r.create();
+    //     r.emplace<TransformComponent>(e, Vector2{0, 0});
 
-        const Texture2D bg = TextureManager::GetTexture(BG_PATH);
-        r.emplace<SpriteComponent>(e, SpriteComponent{
-            BG_PATH,
-            Rectangle{0, 0, (float)bg.width, (float)bg.height},
-            Vector2{(float)bg.width, (float)bg.height}
+    //     const Texture2D bg = TextureManager::GetTexture(BG_PATH);
+    //     r.emplace<SpriteComponent>(e, SpriteComponent{
+    //         BG_PATH,
+    //         Rectangle{0, 0, (float)bg.width, (float)bg.height},
+    //         Vector2{(float)bg.width, (float)bg.height}
+    //     });
+    //     r.emplace<BackgroundTag>(e);
+    // }
+
+    // --- TILEMAP: capa base ---
+    {
+        const int tileW = 16, tileH = 16;
+        const int mapW  = GetScreenWidth()  / tileW + 1;
+        const int mapH  = GetScreenHeight() / tileH + 1;
+
+        TextureManager::LoadTexture(TILES);
+        SetTextureFilter(TextureManager::GetTexture(TILES), TEXTURE_FILTER_POINT);
+
+        // Clip de A5 (arriba-izquierda): x=0, y=0, w=128, h=256
+        auto e = r.create();
+        r.emplace<TilesetComponent>(e, TilesetComponent{
+            /*texturePath=*/TILES,
+            /*tileSize=*/Vector2{(float)tileW,(float)tileH},
+            /*columns=*/8,
+            /*rows=*/16,
+            /*margin=*/0,
+            /*spacing=*/0,
+            /*clip=*/Rectangle{0,0,128,256}
         });
-        r.emplace<BackgroundTag>(e);
+        r.emplace<TilemapComponent>(e, TilemapComponent{
+            /*width=*/mapW, /*height=*/mapH
+            // tiles se llenan en TilemapLoaderSystem
+        });
+        r.emplace<TilemapTag>(e);
+    }
+
+    {
+        const int tileW = 16, tileH = 16;
+        const int mapW  = GetScreenWidth()  / tileW + 1;
+        const int mapH  = GetScreenHeight() / tileH + 1;
+
+        
+
+        // Clip de B (arriba-derecha): x=128, y=0, w=256, h=256
+        auto e = r.create();
+        r.emplace<TilesetComponent>(e, TilesetComponent{
+            /*texturePath=*/TILES,
+            /*tileSize=*/Vector2{(float)tileW,(float)tileH},
+            /*columns=*/16,
+            /*rows=*/16,
+            /*margin=*/0,
+            /*spacing=*/0,
+            /*clip=*/Rectangle{128,0,256,256}
+        });
+        r.emplace<TilemapComponent>(e, TilemapComponent{
+            /*width=*/mapW, /*height=*/mapH
+        });
+        r.emplace<TilemapTag>(e);
     }
 
     // ---------- ENTIDAD: Player (morado sin sombra: columnas 7–9, filas 5–8) ----------
