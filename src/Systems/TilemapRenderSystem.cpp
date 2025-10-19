@@ -17,11 +17,14 @@ static Rectangle tilesetSrcRect(const TilesetComponent& ts, int index) {
     return Rectangle{ sx, sy, ts.tileSize.x, ts.tileSize.y };
 }
 
-void TilemapRenderSystem::update() {             // <- antes estaba en render()
-    auto view = scene->r.view<TilemapComponent, TilesetComponent, TilemapTag>();
-    view.each([&](TilemapComponent& m, TilesetComponent& ts) {
+void TilemapRenderSystem::update() {
+    auto view = scene->r.view<TilemapComponent, TilesetComponent, TransformComponent, TilemapTag>();
+    view.each([&](TilemapComponent& m, TilesetComponent& ts, TransformComponent& tr) {
         const Texture2D tex = TextureManager::GetTexture(ts.texturePath ? ts.texturePath : "");
         if (tex.id == 0 || m.tiles.empty()) return;
+        
+        const float S = (tr.scale <= 0.0f) ? 1.0f : tr.scale; 
+        const Vector2 origin = tr.position; 
 
         for (int y = 0; y < m.height; ++y) {
             for (int x = 0; x < m.width; ++x) {
@@ -29,7 +32,12 @@ void TilemapRenderSystem::update() {             // <- antes estaba en render()
                 if (idx < 0) continue;
 
                 Rectangle src = tilesetSrcRect(ts, idx);
-                Rectangle dst{ x * ts.tileSize.x, y * ts.tileSize.y, ts.tileSize.x, ts.tileSize.y };
+                Rectangle dst{
+                    origin.x + x * ts.tileSize.x * S,
+                    origin.y + y * ts.tileSize.y * S,
+                    ts.tileSize.x * S,
+                    ts.tileSize.y * S
+                };
                 DrawTexturePro(tex, src, dst, {0,0}, 0.f, WHITE);
             }
         }

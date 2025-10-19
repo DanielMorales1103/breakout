@@ -90,3 +90,7 @@ struct TilemapComponent {
 };
 
 struct TilemapTag {}; 
+
+struct MapSourceComponent {
+    std::string csvPath;   // ruta al CSV con los índices de tiles
+};

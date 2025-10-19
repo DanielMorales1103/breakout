@@ -16,7 +16,7 @@
 static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
 static const char* HERO_PATH = "assets/sprites/mer_8_chars1.png";
 static const char* ENEMY_PATH = "assets/sprites/enemies.png";
-static const char* TILES = "assets/backgrounds/tf_atlantis_tiles.png";
+static const char* TILES = "assets/backgrounds/tf_A5_atlantisA.png";
 
 
 enum class Dir { Right, Left, Up, Down };
@@ -67,51 +67,26 @@ void SpriteScene::onSetup() {
     // --- TILEMAP: capa base ---
     {
         const int tileW = 16, tileH = 16;
-        const int mapW  = GetScreenWidth()  / tileW + 1;
-        const int mapH  = GetScreenHeight() / tileH + 1;
 
         TextureManager::LoadTexture(TILES);
         SetTextureFilter(TextureManager::GetTexture(TILES), TEXTURE_FILTER_POINT);
 
-        // Clip de A5 (arriba-izquierda): x=0, y=0, w=128, h=256
         auto e = r.create();
+        r.emplace<TransformComponent>(e, Vector2{0,0});
+        r.get<TransformComponent>(e).scale = 3.0f; 
         r.emplace<TilesetComponent>(e, TilesetComponent{
             /*texturePath=*/TILES,
             /*tileSize=*/Vector2{(float)tileW,(float)tileH},
-            /*columns=*/8,
-            /*rows=*/16,
+            /*columns=*/8,          // 128 / 16
+            /*rows=*/16,            // 256 / 16
             /*margin=*/0,
             /*spacing=*/0,
-            /*clip=*/Rectangle{0,0,128,256}
+            /*clip=*/Rectangle{0,0,128,256} // toda la A5
         });
-        r.emplace<TilemapComponent>(e, TilemapComponent{
-            /*width=*/mapW, /*height=*/mapH
-            // tiles se llenan en TilemapLoaderSystem
-        });
-        r.emplace<TilemapTag>(e);
-    }
 
-    {
-        const int tileW = 16, tileH = 16;
-        const int mapW  = GetScreenWidth()  / tileW + 1;
-        const int mapH  = GetScreenHeight() / tileH + 1;
-
-        
-
-        // Clip de B (arriba-derecha): x=128, y=0, w=256, h=256
-        auto e = r.create();
-        r.emplace<TilesetComponent>(e, TilesetComponent{
-            /*texturePath=*/TILES,
-            /*tileSize=*/Vector2{(float)tileW,(float)tileH},
-            /*columns=*/16,
-            /*rows=*/16,
-            /*margin=*/0,
-            /*spacing=*/0,
-            /*clip=*/Rectangle{128,0,256,256}
-        });
-        r.emplace<TilemapComponent>(e, TilemapComponent{
-            /*width=*/mapW, /*height=*/mapH
-        });
+        // width/height los rellena el loader al leer el CSV
+        r.emplace<TilemapComponent>(e, TilemapComponent{ 0, 0 });
+        r.emplace<MapSourceComponent>(e, MapSourceComponent{ "assets/maps/level.csv" });
         r.emplace<TilemapTag>(e);
     }
 
