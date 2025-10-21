@@ -94,3 +94,21 @@ struct TilemapTag {};
 struct MapSourceComponent {
     std::string csvPath;   // ruta al CSV con los índices de tiles
 };
+
+struct CameraTag {};
+
+struct CameraComponent {
+    bool  active = true;  
+    float zoom   = 1.0f;  
+};
+
+struct ViewportComponent {
+    int width  = 320;     
+    int height = 180;
+};
+
+struct CameraFollowSettings {
+    float deadzoneW = 96.0f;  
+    float deadzoneH = 64.0f;  
+    float damping   = 0.15f;  
+};

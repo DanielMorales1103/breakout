@@ -11,7 +11,8 @@
 #include "Systems/TilemapLoaderSystem.h"
 #include "Systems/TilemapRenderSystem.h"
 #include "Systems/AutotileSystem.h"
-
+#include "Systems/CameraFollowSystem.h"
+#include "Systems/CameraZoomSystem.h"
 
 static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
 static const char* HERO_PATH = "assets/sprites/mer_8_chars1.png";
@@ -47,6 +48,8 @@ void SpriteScene::onSetup() {
     addSystem(new AnimationSystem());
     addSystem(new TilemapLoaderSystem());
     addSystem(new AutotileSystem());     
+    addSystem(new CameraFollowSystem());
+    addSystem(new CameraZoomSystem());
     addSystem(new TilemapRenderSystem());
     addSystem(new RenderSystem());
 
@@ -176,6 +179,29 @@ void SpriteScene::onSetup() {
             });
 
             r.emplace<EnemyTag>(e);
+        }
+    }
+
+    {
+        auto cam = r.create();
+        r.emplace<CameraTag>(cam);
+        r.emplace<CameraComponent>(cam, CameraComponent{ true, 1.0f });
+        r.emplace<ViewportComponent>(cam, ViewportComponent{ 320, 180 });
+        r.emplace<TransformComponent>(cam, Vector2{0,0});
+        r.emplace<CameraFollowSettings>(cam, CameraFollowSettings{128.0f, 80.0f, 0.18f});
+        r.emplace<CameraZoomSettings>(cam, CameraZoomSettings{ 0.75f, 2.0f, 0.10f, 0.20f });
+
+        // centrar al player si existe
+        Vector2 playerPos{0,0}; 
+        bool hasPlayer=false;
+        auto pv = r.view<PlayerTag, TransformComponent>();
+        pv.each([&](auto /*e*/, TransformComponent& t){ if(!hasPlayer){playerPos=t.position; hasPlayer=true;} });
+        if (hasPlayer) {
+            auto &vp  = r.get<ViewportComponent>(cam);
+            auto &ctf = r.get<TransformComponent>(cam);
+            auto &cc  = r.get<CameraComponent>(cam);
+            ctf.position.x = playerPos.x - (vp.width  / cc.zoom) * 0.5f;
+            ctf.position.y = playerPos.y - (vp.height / cc.zoom) * 0.5f;
         }
     }
 }

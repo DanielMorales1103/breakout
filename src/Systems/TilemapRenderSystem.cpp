@@ -18,10 +18,23 @@ static Rectangle tilesetSrcRect(const TilesetComponent& ts, int index) {
 }
 
 void TilemapRenderSystem::update() {
+
+    Vector2 camPos{0,0};
+    float camZoom = 1.0f;
+    {
+        auto cv = scene->r.view<CameraComponent, TransformComponent, ViewportComponent, CameraTag>();
+        cv.each([&](auto /*e*/, CameraComponent &c, TransformComponent &t, ViewportComponent &) {
+            if (c.active) {
+                camPos = t.position;
+                camZoom = c.zoom;
+            }
+        });
+    }
+
     auto view = scene->r.view<TilemapComponent, TilesetComponent, TransformComponent, TilemapTag>();
     view.each([&](TilemapComponent& m, TilesetComponent& ts, TransformComponent& tr) {
         const Texture2D tex = TextureManager::GetTexture(ts.texturePath ? ts.texturePath : "");
-        if (tex.id == 0 || m.tiles.empty()) return;
+        if (tex.id == 0 || m.tiles.empty() || m.width <= 0 || m.height <= 0) return;
         
         const float S = (tr.scale <= 0.0f) ? 1.0f : tr.scale; 
         const Vector2 origin = tr.position; 
@@ -31,12 +44,24 @@ void TilemapRenderSystem::update() {
                 const int idx = m.tiles[y * m.width + x];
                 if (idx < 0) continue;
 
-                Rectangle src = tilesetSrcRect(ts, idx);
+                const int c = idx % ts.columns;
+                const int r = idx / ts.columns;
+
+                Rectangle src {
+                    ts.clip.x + c * (ts.tileSize.x + ts.spacing),
+                    ts.clip.y + r * (ts.tileSize.y + ts.spacing),
+                    ts.tileSize.x,
+                    ts.tileSize.y
+                };
+
+                const float worldX = origin.x + x * ts.tileSize.x * S;
+                const float worldY = origin.y + y * ts.tileSize.y * S;
+
                 Rectangle dst{
-                    origin.x + x * ts.tileSize.x * S,
-                    origin.y + y * ts.tileSize.y * S,
-                    ts.tileSize.x * S,
-                    ts.tileSize.y * S
+                    (worldX - camPos.x) * camZoom,
+                    (worldY - camPos.y) * camZoom,
+                    ts.tileSize.x * S * camZoom,
+                    ts.tileSize.y * S * camZoom
                 };
                 DrawTexturePro(tex, src, dst, {0,0}, 0.f, WHITE);
             }

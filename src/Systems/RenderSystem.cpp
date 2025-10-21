@@ -39,6 +39,16 @@ void RenderSystem::render() {
         });
     }
 
+    Vector2 camPos{0,0};
+    float camZoom = 1.0f;
+    {
+        auto cv = scene->r.view<CameraComponent, TransformComponent, ViewportComponent, CameraTag>();
+        cv.each([&](auto /*e*/, CameraComponent &c, TransformComponent &t, ViewportComponent &) {
+            if (c.active) { camPos = t.position; camZoom = c.zoom; }
+        });
+    }
+
+
     {
         auto view = scene->r.view<TransformComponent, SpriteComponent>(entt::exclude<BackgroundTag>);
         view.each([&](TransformComponent& t, SpriteComponent& s) {
@@ -47,7 +57,17 @@ void RenderSystem::render() {
 
             Rectangle src = s.src.width > 0 ? s.src
                                             : Rectangle{0,0,(float)tex.width,(float)tex.height};
-            DrawSprite(tex, src, t.position, t.rotation, t.scale <= 0 ? 1.0f : t.scale);
+
+            const float S = (t.scale <= 0.0f) ? 1.0f : t.scale;
+
+            Rectangle dest{
+                (t.position.x - camPos.x) * camZoom,
+                (t.position.y - camPos.y) * camZoom,
+                src.width  * S * camZoom,
+                src.height * S * camZoom
+            };
+            Vector2 origin{ dest.width * 0.5f, dest.height * 0.5f };
+            DrawTexturePro(tex, src, dest, origin, t.rotation, WHITE);
         });
     }
 }
