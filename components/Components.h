@@ -91,6 +91,14 @@ struct TilemapComponent {
 
 struct TilemapTag {}; 
 
+// Relleno automático del tilemap alrededor de la cámara
+struct AutoTileFillComponent {
+    int   baseIndex   = 5;    
+    int   padding     = 2;    
+    bool  enabled     = true; 
+};
+
+
 struct MapSourceComponent {
     std::string csvPath;   // ruta al CSV con los índices de tiles
 };

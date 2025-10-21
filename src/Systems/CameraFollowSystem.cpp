@@ -40,24 +40,17 @@ void CameraFollowSystem::update() {
     const float top     = centerY - cfg->deadzoneH * 0.5f;
     const float bottom  = centerY + cfg->deadzoneH * 0.5f;
 
-    // player en pantalla con zoom
-    const float screenX = (playerPos.x - camT->position.x) * camC->zoom;
-    const float screenY = (playerPos.y - camT->position.y) * camC->zoom;
+    // === objetivo: jugador al CENTRO del viewport (considerando zoom) ===
+    const float halfViewW_world = (camV->width  / camC->zoom) * 0.5f;
+    const float halfViewH_world = (camV->height / camC->zoom) * 0.5f;
 
-    // cuánto habría que mover la cámara en pantalla para meterlo a la deadzone
-    const float offX_screen = screenX - std::clamp(screenX, left, right);
-    const float offY_screen = screenY - std::clamp(screenY, top,  bottom);
+    const float targetX = playerPos.x - halfViewW_world;
+    const float targetY = playerPos.y - halfViewH_world;
 
-    // convertir ese desplazamiento de pantalla a mundo
-    const float offX_world = offX_screen / camC->zoom;
-    const float offY_world = offY_screen / camC->zoom;
-
-    const float targetCamX = camT->position.x + offX_world;
-    const float targetCamY = camT->position.y + offY_world;
-
-    // suavizado
+    // === mover cámara (suavizado opcional con damping) ===
     const float dt = GetFrameTime();
-    const float alpha = std::clamp(cfg->damping * dt * 60.0f, 0.0f, 1.0f);
-    camT->position.x = lerp(camT->position.x, targetCamX, alpha);
-    camT->position.y = lerp(camT->position.y, targetCamY, alpha);
+    const float alpha = std::clamp(cfg->damping * dt * 60.0f, 0.0f, 1.0f); // 0 = instantáneo
+
+    camT->position.x = lerp(camT->position.x, targetX, alpha);
+    camT->position.y = lerp(camT->position.y, targetY, alpha);
 }

@@ -13,6 +13,7 @@
 #include "Systems/AutotileSystem.h"
 #include "Systems/CameraFollowSystem.h"
 #include "Systems/CameraZoomSystem.h"
+#include "Systems/CameraInitSystem.h"
 
 static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
 static const char* HERO_PATH = "assets/sprites/mer_8_chars1.png";
@@ -47,6 +48,7 @@ void SpriteScene::onSetup() {
     addSystem(new EnemyAISystem());
     addSystem(new AnimationSystem());
     addSystem(new TilemapLoaderSystem());
+    // addSystem(new CameraInitSystem());
     addSystem(new AutotileSystem());     
     addSystem(new CameraFollowSystem());
     addSystem(new CameraZoomSystem());
@@ -91,6 +93,11 @@ void SpriteScene::onSetup() {
         r.emplace<TilemapComponent>(e, TilemapComponent{ 0, 0 });
         r.emplace<MapSourceComponent>(e, MapSourceComponent{ "assets/maps/level.csv" });
         r.emplace<TilemapTag>(e);
+        r.emplace<AutoTileFillComponent>(e, AutoTileFillComponent{
+            /*baseIndex=*/5,    
+            /*padding=*/2,    
+            /*enabled=*/true  
+        });
     }
 
     // ---------- ENTIDAD: Player (morado sin sombra: columnas 7–9, filas 5–8) ----------
@@ -186,7 +193,7 @@ void SpriteScene::onSetup() {
         auto cam = r.create();
         r.emplace<CameraTag>(cam);
         r.emplace<CameraComponent>(cam, CameraComponent{ true, 1.0f });
-        r.emplace<ViewportComponent>(cam, ViewportComponent{ 320, 180 });
+        r.emplace<ViewportComponent>(cam, ViewportComponent{ GetScreenWidth(), GetScreenHeight() });
         r.emplace<TransformComponent>(cam, Vector2{0,0});
         r.emplace<CameraFollowSettings>(cam, CameraFollowSettings{128.0f, 80.0f, 0.18f});
         r.emplace<CameraZoomSettings>(cam, CameraZoomSettings{ 0.75f, 2.0f, 0.10f, 0.20f });

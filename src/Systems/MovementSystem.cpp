@@ -16,16 +16,4 @@ void MovementSystem::update() {
         t.position.y += v.velocity.y * dt;
     });
 
-    // Clamp a pantalla cuando exista BoundsClampComponent
-    auto clampView = scene->r.view<TransformComponent, SpriteComponent, BoundsClampComponent>();
-    clampView.each([&](TransformComponent& t, SpriteComponent& s, BoundsClampComponent& b) {
-        const int sw = GetScreenWidth();
-        const int sh = GetScreenHeight();
-
-        const float halfW = (s.sizePx.x * t.scale) * 0.5f;
-        const float halfH = (s.sizePx.y * t.scale) * 0.5f;
-
-        t.position.x = clampf(t.position.x, b.margin + halfW, sw - b.margin - halfW);
-        t.position.y = clampf(t.position.y, b.margin + halfH, sh - b.margin - halfH);
-    });
 }
