@@ -120,3 +120,27 @@ struct CameraFollowSettings {
     float deadzoneH = 64.0f;  
     float damping   = 0.15f;  
 };
+
+// -------- IntGrid flags (bitmask) --------
+enum IntCellFlags : unsigned char {
+    IGF_None     = 0,
+    IGF_Walkable = 1 << 0,  // se puede caminar
+    IGF_Block    = 1 << 1,  // muro/ruina (bloquea)
+    IGF_Hazard   = 1 << 2,  // empuja (piedras/corales)
+    IGF_Slow     = 1 << 3   // ralentiza (p.ej. índice 16)
+};
+
+struct IntGridComponent {
+    int width = 0, height = 0;
+    std::vector<unsigned char> cells; // width*height, combinación de IGF_*
+};
+
+struct IntGridRules {
+    std::vector<int> nonWalkableIndices; // muros/ruinas -> Block
+    std::vector<int> hazardIndices;      // piedras     -> Hazard
+    int slowIndex = 16;                  // SOLO este índice será Slow
+    unsigned char defaultFlags = IGF_Walkable; // arena por defecto
+};
+
+struct HazardSettings { float pushBack = 60.0f; };
+struct SlowSettings   { float speedFactor = 0.40f; };

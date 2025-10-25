@@ -61,9 +61,21 @@
 },
 {
   "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
+  "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\DebugRenderSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\DebugRenderSystem.cpp\"",
+  "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/DebugRenderSystem.cpp",
+  "output": "CMakeFiles/GAME.dir/src/Systems/DebugRenderSystem.cpp.obj"
+},
+{
+  "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
   "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\EnemyAISystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\EnemyAISystem.cpp\"",
   "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/EnemyAISystem.cpp",
   "output": "CMakeFiles/GAME.dir/src/Systems/EnemyAISystem.cpp.obj"
+},
+{
+  "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
+  "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\GridCollisionSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\GridCollisionSystem.cpp\"",
+  "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/GridCollisionSystem.cpp",
+  "output": "CMakeFiles/GAME.dir/src/Systems/GridCollisionSystem.cpp.obj"
 },
 {
   "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
@@ -76,6 +88,12 @@
   "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\InputSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\InputSystem.cpp\"",
   "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/InputSystem.cpp",
   "output": "CMakeFiles/GAME.dir/src/Systems/InputSystem.cpp.obj"
+},
+{
+  "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
+  "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\IntGridBakeSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\IntGridBakeSystem.cpp\"",
+  "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/IntGridBakeSystem.cpp",
+  "output": "CMakeFiles/GAME.dir/src/Systems/IntGridBakeSystem.cpp.obj"
 },
 {
   "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",

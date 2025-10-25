@@ -14,6 +14,9 @@
 #include "Systems/CameraFollowSystem.h"
 #include "Systems/CameraZoomSystem.h"
 #include "Systems/CameraInitSystem.h"
+#include "Systems/GridCollisionSystem.h"
+#include "Systems/IntGridBakeSystem.h"
+#include "Systems/DebugRenderSystem.h"
 
 static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
 static const char* HERO_PATH = "assets/sprites/mer_8_chars1.png";
@@ -43,16 +46,18 @@ void SpriteScene::onSetup() {
     SetTextureFilter(TextureManager::GetTexture(ENEMY_PATH), TEXTURE_FILTER_POINT);
 
     // --- Registrar systems (update en orden; render va al final) ---
-    addSystem(new InputSystem());
-    addSystem(new MovementSystem());
-    addSystem(new EnemyAISystem());
-    addSystem(new AnimationSystem());
     addSystem(new TilemapLoaderSystem());
-    // addSystem(new CameraInitSystem());
-    addSystem(new AutotileSystem());     
+    addSystem(new AutotileSystem());    
+    addSystem(new IntGridBakeSystem()); 
+    addSystem(new InputSystem());
+    addSystem(new EnemyAISystem());
+    addSystem(new MovementSystem());
+    addSystem(new GridCollisionSystem());
+    addSystem(new AnimationSystem());  
     addSystem(new CameraFollowSystem());
     addSystem(new CameraZoomSystem());
     addSystem(new TilemapRenderSystem());
+    addSystem(new DebugRenderSystem());
     addSystem(new RenderSystem());
 
     // ---------- ENTIDAD: Fondo ----------
