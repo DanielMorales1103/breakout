@@ -143,4 +143,5 @@ struct IntGridRules {
 };
 
 struct HazardSettings { float pushBack = 60.0f; };
-struct SlowSettings   { float speedFactor = 0.40f; };
+struct SlowSettings   { float speedFactor = 0.30f;  float immediateBrake  = 0.6f; 
+    float maxSpeedOnSlow  = 60.0f;};

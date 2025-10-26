@@ -28,7 +28,7 @@ void IntGridBakeSystem::update() {
         });
     }
     if (!scene->r.any_of<HazardSettings>(mapE)) scene->r.emplace<HazardSettings>(mapE, HazardSettings{60.0f});
-    if (!scene->r.any_of<SlowSettings>(mapE))   scene->r.emplace<SlowSettings>(mapE, SlowSettings{0.40f});
+    if (!scene->r.any_of<SlowSettings>(mapE))   scene->r.emplace<SlowSettings>(mapE, SlowSettings{0.30f, 0.6f, 60.0f});
 
     auto &rules = scene->r.get<IntGridRules>(mapE);
 

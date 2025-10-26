@@ -205,11 +205,23 @@ void GridCollisionSystem::update() {
 
 
         if (anySlow) {
-            v.velocity.x *= slowFactor;
-            v.velocity.y *= slowFactor;
-            t.position.x -= (1.0f - slowFactor) * v.velocity.x * dt;
-            t.position.y -= (1.0f - slowFactor) * v.velocity.y * dt;
-            std::cout << "Slow " << std::endl;
+            const float sF  = sl ? sl->speedFactor    : 0.35f;
+            const float iB  = sl ? sl->immediateBrake : 0.6f;
+            const float cap = sl ? sl->maxSpeedOnSlow : 60.0f;
+
+            t.position.x -= vDesired.x * dt * iB * (1.0f - sF);
+            t.position.y -= vDesired.y * dt * iB * (1.0f - sF);
+
+            float len = std::sqrt(vDesired.x*vDesired.x + vDesired.y*vDesired.y);
+            if (len > 0.0001f) {
+                float target = std::min(len * sF, cap);
+                float k = target / len;
+                v.velocity.x = vDesired.x * k;
+                v.velocity.y = vDesired.y * k;
+            } else {
+                v.velocity.x *= sF;
+                v.velocity.y *= sF;
+            }
         }
     });
 }
