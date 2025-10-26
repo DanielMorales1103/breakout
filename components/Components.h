@@ -2,6 +2,7 @@
 
 #include <string>
 #include <raylib.h>
+#include <random>
 
 struct NameComponent {
     std::string tag;
@@ -151,4 +152,48 @@ struct SlowSettings   { float speedFactor = 0.30f;  float immediateBrake  = 0.6f
 struct CurrentSettings {
     float force   = 60.0f; 
     float maxSpeed = 180.0f;
+};
+
+// --- Definición de una oleada ---
+enum class SpawnPattern {
+    Line,       
+    Circle,
+    RandomArea,
+};
+struct WaveDef {
+    int   count         = 5;      
+    float interval      = 0.50f;  
+    float startDelay    = 1.0f;   
+    SpawnPattern pattern = SpawnPattern::Line;   
+};
+
+struct EnemySpawnSettings {
+    std::vector<WaveDef> waves;
+    bool   loop   = false;
+    float  scale  = 3.0f; 
+};
+
+struct EnemySpawnState {
+    int   curWave        = 0;
+    int   spawnedInWave  = 0;
+    float waveTimer      = 0.f;  
+    float spawnTimer     = 0.f;  
+    bool  waveActive     = false;
+
+    SpawnPattern currentPattern = SpawnPattern::Line;
+    bool         patternLocked  = false;
+};
+
+struct EnemySpawnerComponent {
+    Vector2 basePosition { 0, 0 };
+    float   timeAcc        = 0.0f;   
+    float   waveInterval   = 3.0f;   
+    int     countPerWave   = 4;      
+    bool    enabled        = true;
+    SpawnPattern pattern   = SpawnPattern::Line;
+    Vector2 lineDir        { 1, 0 }; 
+    float   lineSpacing    = 40.0f;  
+    float   circleRadius   = 80.0f;
+    Vector2 areaHalfExtents{ 120, 80 }; 
+    float   jitter         = 6.0f;
 };

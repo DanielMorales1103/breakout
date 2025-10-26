@@ -17,6 +17,7 @@
 #include "Systems/GridCollisionSystem.h"
 #include "Systems/IntGridBakeSystem.h"
 #include "Systems/DebugRenderSystem.h"
+#include "Systems/EnemySpawnSystem.h"
 
 static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
 static const char* HERO_PATH = "assets/sprites/mer_8_chars1.png";
@@ -53,26 +54,13 @@ void SpriteScene::onSetup() {
     addSystem(new EnemyAISystem());
     addSystem(new MovementSystem());
     addSystem(new GridCollisionSystem());
+    addSystem(new EnemySpawnSystem());
     addSystem(new AnimationSystem());  
     addSystem(new CameraFollowSystem());
     addSystem(new CameraZoomSystem());
     addSystem(new TilemapRenderSystem());
     addSystem(new DebugRenderSystem());
     addSystem(new RenderSystem());
-
-    // ---------- ENTIDAD: Fondo ----------
-    // {
-    //     auto e = r.create();
-    //     r.emplace<TransformComponent>(e, Vector2{0, 0});
-
-    //     const Texture2D bg = TextureManager::GetTexture(BG_PATH);
-    //     r.emplace<SpriteComponent>(e, SpriteComponent{
-    //         BG_PATH,
-    //         Rectangle{0, 0, (float)bg.width, (float)bg.height},
-    //         Vector2{(float)bg.width, (float)bg.height}
-    //     });
-    //     r.emplace<BackgroundTag>(e);
-    // }
 
     // --- TILEMAP: capa base ---
     {
@@ -131,67 +119,23 @@ void SpriteScene::onSetup() {
         r.emplace<PlayerTag>(e);
     }
 
-    // ---------- ENEMIGOS: spawns en esquinas, lejos del player ----------
+    // crea spawner con 3 waves, cada una con patrón distinto
     {
-        const int sw = GetScreenWidth();
-        const int sh = GetScreenHeight();
-        const float margin = 40.0f;   // separa del borde
-        const float minDistFromPlayer = 200.0f;
+        auto spawner = r.create();
 
-        // Posición del player (la acabamos de crear arriba)
-        Vector2 playerPos { (float)sw * 0.5f, (float)sh * 0.5f };
-        {
-            auto pv = r.view<PlayerTag, TransformComponent>();
-            pv.each([&](TransformComponent& t){ playerPos = t.position; });
-        }
-
-        // 4 esquinas
-        Vector2 corners[4] = {
-            { margin,        margin        },   // TL
-            { sw - margin,   margin        },   // TR
-            { margin,        sh - margin   },   // BL
-            { sw - margin,   sh - margin   }    // BR
+        EnemySpawnSettings cfg;
+        cfg.waves = {
+            WaveDef{ 5, 0.20f,   0.0f, SpawnPattern::Line },        
+            WaveDef{ 7, 0.20f,  30.0f, SpawnPattern::Line },
+            WaveDef{ 9, 0.20f,  60.0f, SpawnPattern::Line },
+            WaveDef{11, 0.20f,  90.0f, SpawnPattern::Line },
+            WaveDef{13, 0.20f, 120.0f, SpawnPattern::Line },
         };
+        cfg.loop  = false;
+        cfg.scale = 3.0f;
 
-        auto sqr = [](float x){ return x*x; };
-        auto dist2 = [&](Vector2 a, Vector2 b){
-            return sqr(a.x-b.x) + sqr(a.y-b.y);
-        };
-
-        const int ENEMIES_COUNT = 4;  // sube si quieres; si >4, cicla esquinas
-        for (int i = 0; i < ENEMIES_COUNT; ++i) {
-            // elige esquina por índice y, si está muy cerca del player, usa la opuesta
-            int idx = i % 4;
-            Vector2 pos = corners[idx];
-            if (dist2(pos, playerPos) < minDistFromPlayer*minDistFromPlayer) {
-                pos = corners[(idx + 2) % 4]; // esquina opuesta
-            }
-
-            auto e = r.create();
-            r.emplace<TransformComponent>(e, pos);
-            auto &tr = r.get<TransformComponent>(e);
-            tr.scale = 3.0f;
-
-            r.emplace<VelocityComponent>(e, Vector2{0, 0});
-            r.emplace<SpriteComponent>(e, SpriteComponent{
-                ENEMY_PATH,
-                Rectangle{ 0*26.0f, 0*46.0f, 26.0f, 46.0f }, // primer frame del primer bloque del atlas
-                Vector2{26.0f, 46.0f}
-            });
-            r.emplace<AnimatorComponent>(e, AnimatorComponent{
-                /*columns=*/3, /*rows=*/4, /*fps=*/6.0f,
-                /*frame=*/0, /*acc=*/0.0f, /*moving=*/false,
-                /*facing=*/AnimatorComponent::Down,
-                /*baseCol=*/0, /*baseRow=*/0   // primer cuadrante del atlas
-            });
-
-            // seguir al player
-            r.emplace<FollowAIComponent>(e, FollowAIComponent{
-                /*speed=*/50.0f, /*stopRadius=*/0.0f
-            });
-
-            r.emplace<EnemyTag>(e);
-        }
+        r.emplace<EnemySpawnSettings>(spawner, std::move(cfg));
+        r.emplace<EnemySpawnState>(spawner, EnemySpawnState{});
     }
 
     {
