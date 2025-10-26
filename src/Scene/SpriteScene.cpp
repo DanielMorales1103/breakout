@@ -99,7 +99,7 @@ void SpriteScene::onSetup() {
         r.emplace<MapSourceComponent>(e, MapSourceComponent{ "assets/maps/level.csv" });
         r.emplace<TilemapTag>(e);
         r.emplace<AutoTileFillComponent>(e, AutoTileFillComponent{
-            /*baseIndex=*/7,    
+            /*baseIndex=*/1,    
             /*padding=*/2,    
             /*enabled=*/true  
         });

@@ -5,7 +5,7 @@
 #include <cmath>
 
 static inline int idx2d(int x, int y, int w) { return y * w + x; }
-
+static bool s_show = true;
 // === helpers compartidos con colisión ===
 struct GridCtx {
     const IntGridComponent* ig = nullptr;
@@ -28,6 +28,13 @@ static inline Vector2 worldToScreen(const Vector2& world, const TransformCompone
 }
 
 void DebugRenderSystem::update() {
+    if (IsKeyPressed(KEY_T)) {
+        s_show = !s_show;
+    }
+}
+
+void DebugRenderSystem::render() {
+    if(!s_show) return;
     // === cámara activa ===
     TransformComponent* camT = nullptr;
     CameraComponent*    camC = nullptr;

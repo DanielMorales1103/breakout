@@ -5,5 +5,6 @@
 
 class DebugRenderSystem : public System {
 public:
-    void update() override; // se ejecuta en fase de render (solo dibuja líneas)
+    void update() override; 
+    void render() override;
 };

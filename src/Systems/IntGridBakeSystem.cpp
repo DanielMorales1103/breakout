@@ -22,9 +22,9 @@ void IntGridBakeSystem::update() {
     if (!scene->r.any_of<IntGridRules>(mapE)) {
         scene->r.emplace<IntGridRules>(mapE, IntGridRules{
             /*nonWalkableIndices=*/{17,18,24,25,26,32,33,34,40,41,42,48,49,50,56,57,58,64,65,66},
-            /*hazardIndices=*/{2,3,4,6,8,9,11,12},
+            /*hazardIndices=*/{8,9,11,12},
             /*slowIndex=*/16,
-            /*currentIndices=*/{5},
+            /*currentIndices=*/{3},
             /*defaultFlags=*/(unsigned char)IGF_Walkable
         });
     }

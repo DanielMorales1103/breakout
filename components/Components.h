@@ -93,7 +93,7 @@ struct TilemapTag {};
 
 // Relleno automático del tilemap alrededor de la cámara
 struct AutoTileFillComponent {
-    int   baseIndex   = 7;    
+    int   baseIndex   = 1;    
     int   padding     = 2;    
     bool  enabled     = true; 
 };
