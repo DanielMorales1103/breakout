@@ -43,9 +43,9 @@ static std::vector<int> LoadCsv(const std::string& path, int& outW, int& outH) {
 }
 
 void TilemapLoaderSystem::update() {
-    auto view = scene->r.view<TilemapComponent, TilesetComponent, MapSourceComponent, TilemapTag>();
+    auto view = scene->r.view<TilemapComponent, TilesetComponent, TransformComponent, MapSourceComponent, TilemapTag>();
 
-    view.each([&](TilemapComponent& m, TilesetComponent& ts, MapSourceComponent& src) {
+    view.each([&](TilemapComponent& m, TilesetComponent& ts, TransformComponent& tr, MapSourceComponent& src) {
         // Solo cargar una vez
         if (!m.tiles.empty()) return;
 
@@ -59,6 +59,15 @@ void TilemapLoaderSystem::update() {
         m.width  = w;
         m.height = h;
         m.tiles  = std::move(data);
+        
+        const float S = (tr.scale <= 0.0f) ? 1.0f : tr.scale;
+        const float cellW = ts.tileSize.x * S;
+        const float cellH = ts.tileSize.y * S;
+        const float mapWpx = m.width  * cellW;
+        const float mapHpx = m.height * cellH;
+
+        // mueve el origen del mapa al centro del mundo
+        tr.position = { -mapWpx * 0.5f, -mapHpx * 0.5f };
 
         TraceLog(LOG_INFO, "Tilemap loaded from CSV %s  (%dx%d)", src.csvPath.c_str(), m.width, m.height);
     });

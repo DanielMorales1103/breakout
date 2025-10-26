@@ -230,8 +230,6 @@ void GridCollisionSystem::update() {
         }
 
         if (anyCurrent) {
-            // depurar si entra anyCurrent
-            std::cout << "Entrando en anyCurrent" << std::endl;
             float mvx = t.position.x - prevCX;
             float mvy = t.position.y - prevCY;
             if (std::fabs(mvx) < 0.0001f && std::fabs(mvy) < 0.0001f) { mvx = v.velocity.x; mvy = v.velocity.y; }
@@ -240,12 +238,10 @@ void GridCollisionSystem::update() {
             if (len > 0.0001f) {
                 float nx = mvx / len, ny = mvy / len;
 
-                // 1) Aceleración (se siente en frames siguientes)
-                const float force = currentForce > 0 ? currentForce : 400.0f; // súbelo si quieres más
+                const float force = currentForce > 0 ? currentForce : 400.0f; 
                 v.velocity.x += nx * force * dt;
                 v.velocity.y += ny * force * dt;
 
-                // Cap de velocidad
                 float vlen = std::sqrt(v.velocity.x*v.velocity.x + v.velocity.y*v.velocity.y);
                 const float vmax = curMaxSpd > 0 ? curMaxSpd : 220.0f;
                 if (vlen > vmax) {
@@ -254,8 +250,7 @@ void GridCollisionSystem::update() {
                     v.velocity.y *= k;
                 }
 
-                // 2) "Kick" inmediato (SE NOTA YA): usa dt (no dt*dt)
-                const float kick = 150.0f;  // píxeles/seg de desplazamiento instantáneo
+                const float kick = 150.0f; 
                 t.position.x += nx * kick * dt;
                 t.position.y += ny * kick * dt;
             }

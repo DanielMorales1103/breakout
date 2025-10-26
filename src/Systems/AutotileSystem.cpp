@@ -7,7 +7,6 @@
 static inline int idx2d(int x, int y, int w) { return y * w + x; }
 
 void AutotileSystem::update() {
-    // 1) Cámara activa (pos y zoom)
     Vector2 camPos{0,0};
     float camZoom = 1.0f;
     int viewW = 320, viewH = 180;
@@ -73,7 +72,6 @@ void AutotileSystem::update() {
                 for (int x = 0; x < oldW; ++x) {
                     newTiles[idx2d(x + addCols, y, newW)] = m.tiles[idx2d(x, y, oldW)];
                 }
-                // las nuevas columnas [0..addCols-1] quedan con baseIndex
             }
             m.width = newW;
             m.tiles.swap(newTiles);
@@ -126,7 +124,6 @@ void AutotileSystem::update() {
                 for (int x = 0; x < oldW; ++x) {
                     newTiles[idx2d(x, y, newW)] = m.tiles[idx2d(x, y, oldW)];
                 }
-                // columnas [oldW..newW-1] quedan con baseIndex
             }
             m.width = newW;
             m.tiles.swap(newTiles);
