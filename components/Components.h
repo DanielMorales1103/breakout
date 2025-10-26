@@ -124,10 +124,10 @@ struct CameraFollowSettings {
 // -------- IntGrid flags (bitmask) --------
 enum IntCellFlags : unsigned char {
     IGF_None     = 0,
-    IGF_Walkable = 1 << 0,  // se puede caminar
-    IGF_Block    = 1 << 1,  // muro/ruina (bloquea)
-    IGF_Hazard   = 1 << 2,  // empuja (piedras/corales)
-    IGF_Slow     = 1 << 3   // ralentiza (p.ej. índice 16)
+    IGF_Walkable = 1 << 0,  
+    IGF_Block    = 1 << 1, 
+    IGF_Hazard   = 1 << 2,  
+    IGF_Slow     = 1 << 3   
 };
 
 struct IntGridComponent {
@@ -136,10 +136,10 @@ struct IntGridComponent {
 };
 
 struct IntGridRules {
-    std::vector<int> nonWalkableIndices; // muros/ruinas -> Block
-    std::vector<int> hazardIndices;      // piedras     -> Hazard
-    int slowIndex = 16;                  // SOLO este índice será Slow
-    unsigned char defaultFlags = IGF_Walkable; // arena por defecto
+    std::vector<int> nonWalkableIndices; 
+    std::vector<int> hazardIndices;      
+    int slowIndex = 16;                  
+    unsigned char defaultFlags = IGF_Walkable; 
 };
 
 struct HazardSettings { float pushBack = 60.0f; };

@@ -4,6 +4,7 @@
 #include <raylib.h>
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 static inline int idx2d(int x, int y, int w) { return y * w + x; }
 
@@ -54,7 +55,6 @@ static inline bool testBlockX_center(const GridCtx& g, float baseCenterY, float 
     return b;
 }
 
-// prueba colisión moviendo en Y; mantiene el CENTRO-X base
 static inline bool testBlockY_center(const GridCtx& g, float baseCenterX, float newCenterY,
                                      float halfW, float halfH) {
     const float minX = baseCenterX - halfW;
@@ -64,6 +64,30 @@ static inline bool testBlockY_center(const GridCtx& g, float baseCenterX, float 
     bool b,hz,sl;
     queryFlagsInRect(g, minX, minY, maxX, maxY, b, hz, sl);
     return b;
+}
+
+static inline Vector2 contactNormalAABB(
+    float px0, float py0, float px1, float py1,   
+    float tx0, float ty0, float tx1, float ty1    
+) {
+    float dLeft   = std::fabs(px1 - tx0); 
+    float dRight  = std::fabs(px0 - tx1); 
+    float dTop    = std::fabs(py1 - ty0); 
+    float dBottom = std::fabs(py0 - ty1);
+
+    float m = dLeft;
+    int side = 0; 
+    if (dRight  < m) { m = dRight;  side = 1; }
+    if (dTop    < m) { m = dTop;    side = 2; }
+    if (dBottom < m) { m = dBottom; side = 3; }
+
+    switch (side) {
+        case 0: return { -1.f,  0.f }; 
+        case 1: return {  1.f,  0.f }; 
+        case 2: return {  0.f, -1.f }; 
+        case 3: return {  0.f,  1.f }; 
+    }
+    return {0.f, -1.f};
 }
 
 
@@ -103,7 +127,7 @@ void GridCollisionSystem::update() {
     auto pv = scene->r.view<TransformComponent, VelocityComponent, SpriteComponent>();
     pv.each([&](entt::entity e, TransformComponent &t, VelocityComponent &v, SpriteComponent &s) {
         if (!scene->r.any_of<PlayerTag>(e)) return;
-
+        const Vector2 vDesired = v.velocity;
         const float scale = (t.scale <= 0.f) ? 1.f : t.scale;
         const float w = s.src.width  * scale;
         const float h = s.src.height * scale;
@@ -138,24 +162,54 @@ void GridCollisionSystem::update() {
         bool anyBlock=false, anyHazard=false, anySlow=false;
         queryFlagsInRect(g, t.position.x - halfW, t.position.y - halfH, 
                             t.position.x + halfW, t.position.y + halfH,
-                         anyBlock, anyHazard, anySlow);
+                         anyBlock, anyHazard, anySlow); 
 
         if (anyHazard) {
-            const float len = std::sqrt(v.velocity.x*v.velocity.x + v.velocity.y*v.velocity.y);
-            if (len > 0.0001f) {
-                const float nx = v.velocity.x / len;
-                const float ny = v.velocity.y / len;
-                t.position.x -= nx * pushBack * dt;
-                t.position.y -= ny * pushBack * dt;
+            const float px0 = t.position.x - halfW;
+            const float py0 = t.position.y - halfH;
+            const float px1 = t.position.x + halfW;
+            const float py1 = t.position.y + halfH;
+
+            int minTX, minTY, maxTX, maxTY;
+            worldRectToTileRange(g, px0, py0, px1, py1, minTX, minTY, maxTX, maxTY);
+
+            Vector2 n = {0.f, 0.f};
+            bool found = false;
+            for (int ty = minTY; ty <= maxTY && !found; ++ty) {
+                for (int tx = minTX; tx <= maxTX && !found; ++tx) {
+                    unsigned char f = g.ig->cells[idx2d(tx, ty, g.ig->width)];
+                    if (f & IGF_Hazard) {
+                        const float tx0 = g.origin.x + tx * g.cellW;
+                        const float ty0 = g.origin.y + ty * g.cellH;
+                        const float tx1 = tx0 + g.cellW;
+                        const float ty1 = ty0 + g.cellH;
+                        n = contactNormalAABB(px0, py0, px1, py1, tx0, ty0, tx1, ty1);
+                        found = true;
+                    }
+                }
             }
-            // (daño/FX luego)
+            if (!found) {
+                Vector2 vd = { v.velocity.x, v.velocity.y };
+                float len = std::sqrt(vd.x*vd.x + vd.y*vd.y);
+                n = (len > 0.0001f) ? Vector2{ -vd.x/len, -vd.y/len } : Vector2{0.f, -1.f};
+            }
+
+            const float K = pushBack;     
+            t.position.x += n.x * K;      
+            t.position.y += n.y * K;
+
+            v.velocity.x = 0.f;
+            v.velocity.y = 0.f;
+            return; 
         }
+
 
         if (anySlow) {
             v.velocity.x *= slowFactor;
             v.velocity.y *= slowFactor;
             t.position.x -= (1.0f - slowFactor) * v.velocity.x * dt;
             t.position.y -= (1.0f - slowFactor) * v.velocity.y * dt;
+            std::cout << "Slow " << std::endl;
         }
     });
 }

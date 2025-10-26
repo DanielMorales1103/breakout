@@ -23,7 +23,7 @@ void Game::setup() {
 }
 
 void Game::frameStart() {
-    std::cout << "---- Frame: " << frameCount << " ----" << std::endl;
+    // std::cout << "---- Frame: " << frameCount << " ----" << std::endl;
     dT = GetFrameTime();
 }
 
