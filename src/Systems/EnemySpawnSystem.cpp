@@ -4,6 +4,7 @@
 #include <raylib.h>
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 // --- Helpers ---
 static inline float frand(float a, float b) {
@@ -14,7 +15,6 @@ static inline float clampf(float x, float a, float b){ return std::max(a, std::m
 
 const char* ENEMY_PATH = "assets/sprites/enemies.png";
 
-// Rectángulo visible en MUNDO
 struct ViewRect { float minX, minY, maxX, maxY; };
 static ViewRect getWorldView(Scene* scene) {
     Vector2 camPos{0,0}; float zoom=1.f; int vw=320, vh=180;
@@ -26,7 +26,7 @@ static ViewRect getWorldView(Scene* scene) {
     return { camPos.x, camPos.y, camPos.x + w, camPos.y + h };
 }
 
-// Tamaño de celda (para medir “3 tiles”)
+// Tamaño para evitar spawnear sobre el jugador
 static void getCellSize(Scene* scene, float& cw, float& ch) {
     cw = ch = 16.f;
     auto tv = scene->r.view<TilesetComponent, TransformComponent, TilemapTag>();
@@ -44,8 +44,6 @@ static bool getPlayerPos(Scene* scene, Vector2& pos) {
     return ok;
 }
 
-// Punto aleatorio del viewport con margen y mínimo a “minDist” del jugador.
-// Si falla tras varios intentos, devuelve el último intento igual.
 static Vector2 pickPointInViewAway(const ViewRect& r, Vector2 player, float minDist) {
     const float minDist2 = minDist*minDist;
     Vector2 chosen{ (r.minX+r.maxX)*0.5f, (r.minY+r.maxY)*0.5f };
@@ -99,7 +97,6 @@ void EnemySpawnSystem::update() {
         // Avanza reloj global
         st.waveTimer += dt;
 
-        // ¿terminó todo?
         if (st.curWave >= (int)cfg.waves.size()) {
             if (cfg.loop) {
                 st.curWave = 0;
@@ -118,15 +115,19 @@ void EnemySpawnSystem::update() {
         // Espera al startDelay de la oleada
         if (!st.waveActive) {
             if (st.waveTimer >= w.startDelay) {
-                st.waveActive = true;
-                st.spawnTimer = 0.f;
+                st.waveActive    = true;
+                st.spawnTimer    = 0.f;
                 st.spawnedInWave = 0;
 
-                // Elige patrón ALEATORIO entre los 3 existentes
-                int r = GetRandomValue(0, 2); // 0..2
-                st.currentPattern = (r==0? SpawnPattern::Line
-                                   : r==1? SpawnPattern::Circle
-                                         : SpawnPattern::RandomArea);
+                if (w.waveIndex >= 3) {
+                    // Waves 3 y 4 aleatorio entre los tres
+                    int r = GetRandomValue(0, 2); // 0..2
+                    st.currentPattern = (r == 0 ? SpawnPattern::Line
+                                        : r == 1 ? SpawnPattern::Circle
+                                                : SpawnPattern::RandomArea);
+                }else{
+                    st.currentPattern = w.pattern;
+                }
                 st.patternLocked = true;
             } else {
                 return;
@@ -138,6 +139,8 @@ void EnemySpawnSystem::update() {
             st.curWave++;
             st.patternLocked = false;
             st.waveActive = false;
+            st.lineInit = false;
+            st.circleInit = false;
             return;
         }
 
@@ -157,55 +160,55 @@ void EnemySpawnSystem::update() {
         // --- Spawning según patrón elegido para ESTA oleada ---
         switch (st.currentPattern) {
             case SpawnPattern::RandomArea: {
+                // depurar
+                std::cout << "Spawning in RandomArea pattern\n";
                 Vector2 p = pickPointInViewAway(view, playerPos, minDist);
                 spawnEnemy(scene, p, cfg.scale);
                 st.spawnedInWave++;
             } break;
 
             case SpawnPattern::Line: {
-                // Horizontal o vertical al azar
-                bool horizontal = (GetRandomValue(0,1) == 0);
-                // Espaciado ≈ 1.5 tiles
-                const float spacing = 1.5f * ((cw+ch)*0.5f);
+                // Init una sola vez por oleada
+                if (!st.lineInit) {
+                    st.lineHorizontal = (GetRandomValue(0,1) == 0);
 
-                // Longitud total (aprox) de la línea
-                const int   need = w.count - st.spawnedInWave;
-                const float total = (need-1) * spacing;
+                    // spacing chico para "pegaditos" (≈ 0.8 tile):
+                    float tile = (cw + ch) * 0.5f;
+                    st.lineSpacing = 1.5f * tile;
 
-                // Punto base dentro de la vista dejando margen para que quepa la línea
-                Vector2 base;
-                if (horizontal) {
-                    float margin = total*0.5f;
-                    base.x = frand(view.minX + margin, view.maxX - margin);
-                    base.y = frand(view.minY,       view.maxY);
-                } else {
-                    float margin = total*0.5f;
-                    base.x = frand(view.minX,       view.maxX);
-                    base.y = frand(view.minY + margin, view.maxY - margin);
+                    // Calcula longitud total de la línea de toda la oleada:
+                    float total = (w.count > 1 ? (w.count - 1) * st.lineSpacing : 0.f);
+
+                    // Elige base dentro de vista, con margen para que quepa la línea:
+                    if (st.lineHorizontal) {
+                        float margin = total * 0.5f;
+                        st.lineBase.x = frand(view.minX + margin, view.maxX - margin);
+                        st.lineBase.y = frand(view.minY, view.maxY);
+                    } else {
+                        float margin = total * 0.5f;
+                        st.lineBase.x = frand(view.minX, view.maxX);
+                        st.lineBase.y = frand(view.minY + margin, view.maxY - margin);
+                    }
+
+                    // Si quedó muy cerca del player, reubica la base:
+                    if (len2(Vector2{st.lineBase.x - playerPos.x, st.lineBase.y - playerPos.y}) < (minDist*minDist)) {
+                        st.lineBase = pickPointInViewAway(view, playerPos, minDist);
+                    }
+                    st.lineInit = true;
                 }
 
-                // Corrección: si está muy cerca del player, recoloca
-                if (len2(Vector2{base.x-playerPos.x, base.y-playerPos.y}) < (minDist*minDist)) {
-                    base = pickPointInViewAway(view, playerPos, minDist);
-                }
+                // Posición del N-ésimo enemigo de la línea:
+                int idx = st.spawnedInWave;              // 0..count-1
+                float total = (w.count > 1 ? (w.count - 1) * st.lineSpacing : 0.f);
+                Vector2 p = st.lineBase;
 
-                // Spawnea tantos como quepan en esta “ronda” (1 por tick)
-                // Para no complicar, crea SOLO 1 por intervalo, en posición siguiente sobre la línea.
-                int k = st.spawnedInWave; // cuántos van
-                int idxInLine = k;        // siguiente índice
-                Vector2 p = base;
-                if (horizontal) p.x = base.x - total*0.5f + idxInLine*spacing;
-                else            p.y = base.y - total*0.5f + idxInLine*spacing;
+                if (st.lineHorizontal) p.x = st.lineBase.x - total*0.5f + idx * st.lineSpacing;
+                else                   p.y = st.lineBase.y - total*0.5f + idx * st.lineSpacing;
 
-                // Si cae muy cerca del player, “salta” un paso
-                if (len2(Vector2{p.x-playerPos.x, p.y-playerPos.y}) < (minDist*minDist)) {
-                    if (horizontal) p.x += spacing;
-                    else            p.y += spacing;
-                }
-                // Asegura que sigue dentro de la vista
-                if (!insideView(view, p, 4.f)) {
-                    p.x = clampf(p.x, view.minX+4, view.maxX-4);
-                    p.y = clampf(p.y, view.minY+4, view.maxY-4);
+                // Clamp suave a vista:
+                if (!insideView(view, p, 2.f)) {
+                    p.x = clampf(p.x, view.minX + 2.f, view.maxX - 2.f);
+                    p.y = clampf(p.y, view.minY + 2.f, view.maxY - 2.f);
                 }
 
                 spawnEnemy(scene, p, cfg.scale);
@@ -213,41 +216,40 @@ void EnemySpawnSystem::update() {
             } break;
 
             case SpawnPattern::Circle: {
-                // Centro y radio dentro de la vista
-                const float radius = frand(2.5f, 4.0f) * ((cw+ch)*0.5f);
-                ViewRect vr = view;
-                // deja margen para que el círculo quepa
-                vr.minX += radius; vr.maxX -= radius;
-                vr.minY += radius; vr.maxY -= radius;
+                if (!st.circleInit) {
+                    float tile = (cw + ch) * 0.5f;
 
-                Vector2 center = pickPointInViewAway(vr, playerPos, std::max(minDist, radius*0.6f));
+                    // Radio pequeño para que se vean cercanos:
+                    st.circleRadius = frand(1.2f, 1.8f) * tile; // más compacto
 
-                // Coloca 1 enemigo por intervalo en el siguiente ángulo
-                int k = st.spawnedInWave;
-                int need = w.count;
-                float ang = (need > 1) ? (2.0f * PI * (float)k / (float)need) : 0.0f;
-                Vector2 p {
-                    center.x + std::cos(ang) * radius,
-                    center.y + std::sin(ang) * radius
+                    // Margen para que quepa el círculo completo:
+                    ViewRect vr = view;
+                    vr.minX += st.circleRadius; vr.maxX -= st.circleRadius;
+                    vr.minY += st.circleRadius; vr.maxY -= st.circleRadius;
+
+                    st.circleCenter = pickPointInViewAway(vr, playerPos, std::max(minDist, st.circleRadius*0.8f));
+                    st.circleInit = true;
+                }
+
+                int k = st.spawnedInWave;           // 0..count-1
+                int need = std::max(1, w.count);
+                float ang = 2.0f * PI * (float)k / (float)need;
+
+                Vector2 p{
+                    st.circleCenter.x + std::cos(ang) * st.circleRadius,
+                    st.circleCenter.y + std::sin(ang) * st.circleRadius
                 };
 
-                // Si quedara demasiado cerca del player, empuja un poco
-                Vector2 d{ p.x - playerPos.x, p.y - playerPos.y };
-                float d2 = len2(d);
-                if (d2 < (minDist*minDist)) {
-                    float inv = 1.0f / std::max(std::sqrt(d2), 0.001f);
-                    p.x += d.x * inv * (minDist - std::sqrt(d2));
-                    p.y += d.y * inv * (minDist - std::sqrt(d2));
-                }
-                // Clamp a vista
-                if (!insideView(view, p, 4.f)) {
-                    p.x = clampf(p.x, view.minX+4, view.maxX-4);
-                    p.y = clampf(p.y, view.minY+4, view.maxY-4);
+                // Clamp suave a vista:
+                if (!insideView(view, p, 2.f)) {
+                    p.x = clampf(p.x, view.minX + 2.f, view.maxX - 2.f);
+                    p.y = clampf(p.y, view.minY + 2.f, view.maxY - 2.f);
                 }
 
                 spawnEnemy(scene, p, cfg.scale);
                 st.spawnedInWave++;
             } break;
+
         }
     });
 }

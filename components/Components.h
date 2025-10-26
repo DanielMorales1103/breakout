@@ -163,7 +163,8 @@ enum class SpawnPattern {
 struct WaveDef {
     int   count         = 5;      
     float interval      = 0.50f;  
-    float startDelay    = 1.0f;   
+    float startDelay    = 1.0f;  
+    int waveIndex        = 0; 
     SpawnPattern pattern = SpawnPattern::Line;   
 };
 
@@ -179,9 +180,17 @@ struct EnemySpawnState {
     float waveTimer      = 0.f;  
     float spawnTimer     = 0.f;  
     bool  waveActive     = false;
-
+    
     SpawnPattern currentPattern = SpawnPattern::Line;
     bool         patternLocked  = false;
+
+    bool     lineInit = false;
+    bool     lineHorizontal = false;
+    Vector2  lineBase{0,0};
+    float    lineSpacing = 0.f;
+    bool     circleInit = false;
+    Vector2  circleCenter{0,0};
+    float    circleRadius = 0.f;
 };
 
 struct EnemySpawnerComponent {

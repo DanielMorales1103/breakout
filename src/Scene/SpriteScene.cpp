@@ -125,11 +125,11 @@ void SpriteScene::onSetup() {
 
         EnemySpawnSettings cfg;
         cfg.waves = {
-            WaveDef{ 5, 0.20f,   0.0f, SpawnPattern::Line },        
-            WaveDef{ 7, 0.20f,  30.0f, SpawnPattern::Line },
-            WaveDef{ 9, 0.20f,  60.0f, SpawnPattern::Line },
-            WaveDef{11, 0.20f,  90.0f, SpawnPattern::Line },
-            WaveDef{13, 0.20f, 120.0f, SpawnPattern::Line },
+            WaveDef{ 5, 0.20f,   0.0f, 0, SpawnPattern::Line },        
+            WaveDef{ 7, 0.20f,  30.0f, 1, SpawnPattern::Circle },
+            WaveDef{ 9, 0.20f,  60.0f, 2, SpawnPattern::RandomArea },
+            WaveDef{11, 0.20f,  90.0f, 3, SpawnPattern::Line },
+            WaveDef{13, 0.20f, 120.0f, 4, SpawnPattern::Line },
         };
         cfg.loop  = false;
         cfg.scale = 3.0f;
