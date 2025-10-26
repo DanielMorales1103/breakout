@@ -206,3 +206,23 @@ struct EnemySpawnerComponent {
     Vector2 areaHalfExtents{ 120, 80 }; 
     float   jitter         = 6.0f;
 };
+
+
+// Config de una zona de proximidad (lo “estático”)
+struct ProximitySpawnZone {
+    Vector2      center;         
+    float        triggerRadius;  
+    int          spawnCount;     
+    float        spawnInterval;
+    SpawnPattern pattern;        
+    bool         oneShot = true; 
+};
+
+// Estado interno de la zona (lo “dinámico”)
+struct ProximitySpawnState {
+    bool  triggered   = false; 
+    bool  spawning    = false; 
+    int   spawned     = 0;     
+    float timer       = 0.0f;  
+    bool  finished    = false; 
+};

@@ -18,6 +18,7 @@
 #include "Systems/IntGridBakeSystem.h"
 #include "Systems/DebugRenderSystem.h"
 #include "Systems/EnemySpawnSystem.h"
+#include "Systems/ProximitySpawnSystem.h"
 
 static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
 static const char* HERO_PATH = "assets/sprites/mer_8_chars1.png";
@@ -55,6 +56,7 @@ void SpriteScene::onSetup() {
     addSystem(new MovementSystem());
     addSystem(new GridCollisionSystem());
     addSystem(new EnemySpawnSystem());
+    addSystem(new ProximitySpawnSystem());
     addSystem(new AnimationSystem());  
     addSystem(new CameraFollowSystem());
     addSystem(new CameraZoomSystem());

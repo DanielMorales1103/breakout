@@ -109,6 +109,12 @@
 },
 {
   "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
+  "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\ProximitySpawnSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\ProximitySpawnSystem.cpp\"",
+  "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/ProximitySpawnSystem.cpp",
+  "output": "CMakeFiles/GAME.dir/src/Systems/ProximitySpawnSystem.cpp.obj"
+},
+{
+  "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
   "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -O3 -DNDEBUG -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\RenderSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\RenderSystem.cpp\"",
   "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/RenderSystem.cpp",
   "output": "CMakeFiles/GAME.dir/src/Systems/RenderSystem.cpp.obj"
