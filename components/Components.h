@@ -93,7 +93,7 @@ struct TilemapTag {};
 
 // Relleno automático del tilemap alrededor de la cámara
 struct AutoTileFillComponent {
-    int   baseIndex   = 5;    
+    int   baseIndex   = 7;    
     int   padding     = 2;    
     bool  enabled     = true; 
 };
@@ -127,21 +127,28 @@ enum IntCellFlags : unsigned char {
     IGF_Walkable = 1 << 0,  
     IGF_Block    = 1 << 1, 
     IGF_Hazard   = 1 << 2,  
-    IGF_Slow     = 1 << 3   
+    IGF_Slow     = 1 << 3,
+    IGF_Current  = 1 << 4
 };
 
 struct IntGridComponent {
     int width = 0, height = 0;
-    std::vector<unsigned char> cells; // width*height, combinación de IGF_*
+    std::vector<unsigned char> cells;
 };
 
 struct IntGridRules {
     std::vector<int> nonWalkableIndices; 
     std::vector<int> hazardIndices;      
-    int slowIndex = 16;                  
+    int slowIndex = 16;    
+    std::vector<int> currentIndices;               
     unsigned char defaultFlags = IGF_Walkable; 
 };
 
 struct HazardSettings { float pushBack = 60.0f; };
 struct SlowSettings   { float speedFactor = 0.30f;  float immediateBrake  = 0.6f; 
     float maxSpeedOnSlow  = 60.0f;};
+
+struct CurrentSettings {
+    float force   = 60.0f; 
+    float maxSpeed = 180.0f;
+};

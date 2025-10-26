@@ -92,6 +92,7 @@ void DebugRenderSystem::update() {
                 if (f & IGF_Block)         col = Color{255, 60, 60,180};   // rojo
                 else if (f & IGF_Hazard)   col = Color{255,140, 0,180};    // naranja
                 else if (f & IGF_Slow)     col = Color{ 60,120,255,180};   // azul
+                else if (f & IGF_Current)  col = Color{  0,255,255,180};   // cian
                 else if (f & IGF_Walkable) col = Color{120,255,120,120};   // verde
             }
 

@@ -28,10 +28,10 @@ static inline void worldRectToTileRange(const GridCtx& g, float minX, float minY
 }
 
 static inline void queryFlagsInRect(const GridCtx& g, float minX, float minY, float maxX, float maxY,
-                                    bool& anyBlock, bool& anyHazard, bool& anySlow) {
+                                    bool& anyBlock, bool& anyHazard, bool& anySlow, bool& anyCurrent) {
     int minTX, minTY, maxTX, maxTY;
     worldRectToTileRange(g, minX, minY, maxX, maxY, minTX, minTY, maxTX, maxTY);
-    anyBlock = anyHazard = anySlow = false;
+    anyBlock = anyHazard = anySlow = anyCurrent = false;
 
     for (int ty = minTY; ty <= maxTY; ++ty) {
         for (int tx = minTX; tx <= maxTX; ++tx) {
@@ -39,6 +39,7 @@ static inline void queryFlagsInRect(const GridCtx& g, float minX, float minY, fl
             if (f & IGF_Block)  { anyBlock  = true; }
             if (f & IGF_Hazard) { anyHazard = true; }
             if (f & IGF_Slow)   { anySlow   = true; }
+            if (f & IGF_Current) { anyCurrent = true; }
         }
     }
 }
@@ -50,8 +51,8 @@ static inline bool testBlockX_center(const GridCtx& g, float baseCenterY, float 
     const float maxX = newCenterX + halfW;
     const float minY = baseCenterY - halfH;
     const float maxY = baseCenterY + halfH;
-    bool b,hz,sl;
-    queryFlagsInRect(g, minX, minY, maxX, maxY, b, hz, sl);
+    bool b,hz,sl,cur;
+    queryFlagsInRect(g, minX, minY, maxX, maxY, b, hz, sl, cur);
     return b;
 }
 
@@ -61,8 +62,8 @@ static inline bool testBlockY_center(const GridCtx& g, float baseCenterX, float 
     const float maxX = baseCenterX + halfW;
     const float minY = newCenterY - halfH;
     const float maxY = newCenterY + halfH;
-    bool b,hz,sl;
-    queryFlagsInRect(g, minX, minY, maxX, maxY, b, hz, sl);
+    bool b,hz,sl,cur;
+    queryFlagsInRect(g, minX, minY, maxX, maxY, b, hz, sl, cur);
     return b;
 }
 
@@ -102,6 +103,7 @@ void GridCollisionSystem::update() {
     IntGridComponent*   ig = nullptr;
     HazardSettings*     hz = nullptr;
     SlowSettings*       sl = nullptr;
+    CurrentSettings*    cr = nullptr;
 
     auto tv = scene->r.view<TilemapComponent, TilesetComponent, TransformComponent, IntGridComponent, TilemapTag>();
     tv.each([&](auto e, TilemapComponent &m, TilesetComponent &tset, TransformComponent &tr, IntGridComponent &grid){
@@ -111,9 +113,12 @@ void GridCollisionSystem::update() {
 
     if (scene->r.any_of<HazardSettings>(mapE)) hz = &scene->r.get<HazardSettings>(mapE);
     if (scene->r.any_of<SlowSettings>(mapE))   sl = &scene->r.get<SlowSettings>(mapE);
+    if (scene->r.any_of<CurrentSettings>(mapE)) cr = &scene->r.get<CurrentSettings>(mapE);
 
-    const float pushBack   = hz ? hz->pushBack    : 60.0f;
-    const float slowFactor = sl ? sl->speedFactor : 0.40f;
+    const float pushBack        = hz ? hz->pushBack    : 60.0f;
+    const float slowFactor      = sl ? sl->speedFactor : 0.40f;
+    const float currentForce    = cr ? cr->force : 60.0f;
+    const float curMaxSpd       = cr ? cr->maxSpeed    : 180.0f;
 
     const float S = (tt->scale <= 0.f) ? 1.f : tt->scale;
 
@@ -159,10 +164,10 @@ void GridCollisionSystem::update() {
         }
 
         // 3) Efectos (hazard/slow) sobre el AABB final
-        bool anyBlock=false, anyHazard=false, anySlow=false;
+        bool anyBlock=false, anyHazard=false, anySlow=false, anyCurrent=false;
         queryFlagsInRect(g, t.position.x - halfW, t.position.y - halfH, 
                             t.position.x + halfW, t.position.y + halfH,
-                         anyBlock, anyHazard, anySlow); 
+                         anyBlock, anyHazard, anySlow, anyCurrent);
 
         if (anyHazard) {
             const float px0 = t.position.x - halfW;
@@ -221,6 +226,38 @@ void GridCollisionSystem::update() {
             } else {
                 v.velocity.x *= sF;
                 v.velocity.y *= sF;
+            }
+        }
+
+        if (anyCurrent) {
+            // depurar si entra anyCurrent
+            std::cout << "Entrando en anyCurrent" << std::endl;
+            float mvx = t.position.x - prevCX;
+            float mvy = t.position.y - prevCY;
+            if (std::fabs(mvx) < 0.0001f && std::fabs(mvy) < 0.0001f) { mvx = v.velocity.x; mvy = v.velocity.y; }
+
+            float len = std::sqrt(mvx*mvx + mvy*mvy);
+            if (len > 0.0001f) {
+                float nx = mvx / len, ny = mvy / len;
+
+                // 1) Aceleración (se siente en frames siguientes)
+                const float force = currentForce > 0 ? currentForce : 400.0f; // súbelo si quieres más
+                v.velocity.x += nx * force * dt;
+                v.velocity.y += ny * force * dt;
+
+                // Cap de velocidad
+                float vlen = std::sqrt(v.velocity.x*v.velocity.x + v.velocity.y*v.velocity.y);
+                const float vmax = curMaxSpd > 0 ? curMaxSpd : 220.0f;
+                if (vlen > vmax) {
+                    float k = vmax / vlen;
+                    v.velocity.x *= k;
+                    v.velocity.y *= k;
+                }
+
+                // 2) "Kick" inmediato (SE NOTA YA): usa dt (no dt*dt)
+                const float kick = 150.0f;  // píxeles/seg de desplazamiento instantáneo
+                t.position.x += nx * kick * dt;
+                t.position.y += ny * kick * dt;
             }
         }
     });
