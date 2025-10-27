@@ -1,6 +1,6 @@
 local M = {}
 M.radius = 96
-M.angvel = 1.2       -- rad/s
+M.angvel = 0.8
 M.follow_player = false
 
 function M.update(self, state, ctx)

@@ -1,5 +1,5 @@
 local M = {}
-M.speed = 70
+M.speed = 40
 M.arrive = 14
 
 local function default_wps(self)

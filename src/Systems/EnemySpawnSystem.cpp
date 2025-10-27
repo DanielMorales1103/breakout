@@ -79,7 +79,7 @@ static entt::entity spawnEnemy(Scene* scene, Vector2 pos, float scale, const cha
     });
     r.emplace<EnemyTag>(e);
 
-    r.emplace<MovementParams>(e, MovementParams{ 35.f });
+    r.emplace<MovementParams>(e, MovementParams{ 25.f });
     const char* path = (scriptPath && *scriptPath) ? scriptPath : "assets/scripts/move_tracking.lua";
     r.emplace<ScriptMove>(e, ScriptMove{ std::string(path)});
 
