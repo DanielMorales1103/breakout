@@ -56,7 +56,7 @@ static Vector2 pickPointInViewAway(const ViewRect& r, Vector2 player, float minD
 }
 
 // Crea enemigo básico
-static entt::entity spawnEnemy(Scene* scene, Vector2 pos, float scale) {
+static entt::entity spawnEnemy(Scene* scene, Vector2 pos, float scale, const char* scriptPath) {
     auto& r = scene->r;
     auto e = r.create();
 
@@ -78,6 +78,11 @@ static entt::entity spawnEnemy(Scene* scene, Vector2 pos, float scale) {
         /*baseCol=*/0, /*baseRow=*/0
     });
     r.emplace<EnemyTag>(e);
+
+    r.emplace<MovementParams>(e, MovementParams{ 35.f });
+    const char* path = (scriptPath && *scriptPath) ? scriptPath : "assets/scripts/move_tracking.lua";
+    r.emplace<ScriptMove>(e, ScriptMove{ std::string(path)});
+
     return e;
 }
 
@@ -163,7 +168,8 @@ void EnemySpawnSystem::update() {
                 // depurar
                 std::cout << "Spawning in RandomArea pattern\n";
                 Vector2 p = pickPointInViewAway(view, playerPos, minDist);
-                spawnEnemy(scene, p, cfg.scale);
+                const char* ms = w.moveScript.empty() ? "assets/scripts/move_tracking.lua" : w.moveScript.c_str();
+                spawnEnemy(scene, p, cfg.scale, ms);
                 st.spawnedInWave++;
             } break;
 
@@ -210,8 +216,8 @@ void EnemySpawnSystem::update() {
                     p.x = clampf(p.x, view.minX + 2.f, view.maxX - 2.f);
                     p.y = clampf(p.y, view.minY + 2.f, view.maxY - 2.f);
                 }
-
-                spawnEnemy(scene, p, cfg.scale);
+                const char* ms = w.moveScript.empty() ? "assets/scripts/move_tracking.lua" : w.moveScript.c_str();
+                spawnEnemy(scene, p, cfg.scale, ms);
                 st.spawnedInWave++;
             } break;
 
@@ -245,8 +251,8 @@ void EnemySpawnSystem::update() {
                     p.x = clampf(p.x, view.minX + 2.f, view.maxX - 2.f);
                     p.y = clampf(p.y, view.minY + 2.f, view.maxY - 2.f);
                 }
-
-                spawnEnemy(scene, p, cfg.scale);
+                const char* ms = w.moveScript.empty() ? "assets/scripts/move_tracking.lua" : w.moveScript.c_str();
+                spawnEnemy(scene, p, cfg.scale, ms);
                 st.spawnedInWave++;
             } break;
 

@@ -121,6 +121,12 @@
 },
 {
   "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
+  "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\ScriptMovementSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\ScriptMovementSystem.cpp\"",
+  "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/ScriptMovementSystem.cpp",
+  "output": "CMakeFiles/GAME.dir/src/Systems/ScriptMovementSystem.cpp.obj"
+},
+{
+  "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
   "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\TilemapLoaderSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\TilemapLoaderSystem.cpp\"",
   "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/TilemapLoaderSystem.cpp",
   "output": "CMakeFiles/GAME.dir/src/Systems/TilemapLoaderSystem.cpp.obj"

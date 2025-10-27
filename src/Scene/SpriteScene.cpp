@@ -19,6 +19,7 @@
 #include "Systems/DebugRenderSystem.h"
 #include "Systems/EnemySpawnSystem.h"
 #include "Systems/ProximitySpawnSystem.h"
+#include "Systems/ScriptMovementSystem.h"
 
 static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
 static const char* HERO_PATH = "assets/sprites/mer_8_chars1.png";
@@ -52,11 +53,12 @@ void SpriteScene::onSetup() {
     addSystem(new AutotileSystem());    
     addSystem(new IntGridBakeSystem()); 
     addSystem(new InputSystem());
-    addSystem(new EnemyAISystem());
+    // addSystem(new EnemyAISystem());
     addSystem(new MovementSystem());
     addSystem(new GridCollisionSystem());
     addSystem(new EnemySpawnSystem());
     addSystem(new ProximitySpawnSystem());
+    addSystem(new ScriptMovementSystem());
     addSystem(new AnimationSystem());  
     addSystem(new CameraFollowSystem());
     addSystem(new CameraZoomSystem());
@@ -127,11 +129,11 @@ void SpriteScene::onSetup() {
 
         EnemySpawnSettings cfg;
         cfg.waves = {
-            WaveDef{ 5, 0.20f,   0.0f, 0, SpawnPattern::Line },        
-            WaveDef{ 7, 0.20f,  30.0f, 1, SpawnPattern::Circle },
-            WaveDef{ 9, 0.20f,  60.0f, 2, SpawnPattern::RandomArea },
-            WaveDef{11, 0.20f,  90.0f, 3, SpawnPattern::Line },
-            WaveDef{13, 0.20f, 120.0f, 4, SpawnPattern::Line },
+            WaveDef{ 5, 0.20f,   10.0f, 0, SpawnPattern::Line        , "assets/scripts/move_tracking.lua"},        
+            WaveDef{ 7, 0.20f,  15.0f, 1, SpawnPattern::Circle      , "assets/scripts/move_circular.lua"},
+            WaveDef{ 9, 0.20f,  50.0f, 2, SpawnPattern::RandomArea  , "assets/scripts/move_tracking.lua"},
+            WaveDef{11, 0.20f,  20.0f, 3, SpawnPattern::Line        , "assets/scripts/move_patrol.lua"},
+            WaveDef{13, 0.20f, 120.0f, 4, SpawnPattern::Line        , "assets/scripts/move_circular.lua"},
         };
         cfg.loop  = false;
         cfg.scale = 3.0f;

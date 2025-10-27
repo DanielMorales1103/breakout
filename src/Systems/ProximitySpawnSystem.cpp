@@ -12,7 +12,7 @@ static inline float dist2(Vector2 a, Vector2 b){ return sqr(a.x-b.x)+sqr(a.y-b.y
 const char* ENEMY_PATH2 = "assets/sprites/mer_8_chars1.png";
 
 // ---- util: fábrica mínima de enemigo quieto (idle) ----
-static entt::entity SpawnEnemy(entt::registry& r, Vector2 pos, float scale) {
+static entt::entity SpawnEnemy(entt::registry& r, Vector2 pos, float scale, const char* scriptPath) {
     auto e = r.create();
     r.emplace<TransformComponent>(e, pos);
     r.get<TransformComponent>(e).scale = scale;
@@ -30,6 +30,10 @@ static entt::entity SpawnEnemy(entt::registry& r, Vector2 pos, float scale) {
         /*baseCol=*/0, /*baseRow=*/0
     });
     r.emplace<EnemyTag>(e);
+
+    r.emplace<MovementParams>(e, MovementParams{35.f});
+    const char* path = (scriptPath && *scriptPath) ? scriptPath : "assets/scripts/move_tracking.lua";
+    r.emplace<ScriptMove>(e, ScriptMove{ std::string(path) });
     return e;
 }
 
@@ -81,7 +85,8 @@ void ProximitySpawnSystem::update() {
                     /*spawnCount*/    3,
                     /*spawnInterval*/ 0.15f,
                     /*pattern*/       SpawnPattern::RandomArea,
-                    /*oneShot*/       true
+                    /*oneShot*/       true,
+                    /*moveScript*/    "assets/scripts/move_patrol.lua"
                 });
                 r.emplace<ProximitySpawnState>(z, ProximitySpawnState{}); 
             }
@@ -146,8 +151,8 @@ void ProximitySpawnSystem::update() {
             pos.x += (pos.x < playerPos.x ? -48.f : 48.f);
             pos.y += (pos.y < playerPos.y ? -48.f : 48.f);
         }
-
-        SpawnEnemy(r, pos, /*scale=*/3.0f);
+        const char* ms = z.moveScript.empty() ? "assets/scripts/move_patrol.lua" : z.moveScript.c_str();
+        SpawnEnemy(r, pos, /*scale=*/3.0f, ms);
         st.spawned++;
     });
 }

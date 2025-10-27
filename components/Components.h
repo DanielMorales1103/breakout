@@ -166,6 +166,7 @@ struct WaveDef {
     float startDelay    = 1.0f;  
     int waveIndex        = 0; 
     SpawnPattern pattern = SpawnPattern::Line;   
+    std::string moveScript;
 };
 
 struct EnemySpawnSettings {
@@ -216,6 +217,7 @@ struct ProximitySpawnZone {
     float        spawnInterval;
     SpawnPattern pattern;        
     bool         oneShot = true; 
+    std::string moveScript = "assets/scripts/move_tracking.lua";
 };
 
 // Estado interno de la zona (lo “dinámico”)
@@ -225,4 +227,12 @@ struct ProximitySpawnState {
     int   spawned     = 0;     
     float timer       = 0.0f;  
     bool  finished    = false; 
+};
+
+struct ScriptMove {
+    std::string scriptPath;  
+};
+
+struct MovementParams {
+    float maxSpeed = 70.f;   
 };
