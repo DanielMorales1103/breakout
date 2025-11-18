@@ -236,3 +236,11 @@ struct ScriptMove {
 struct MovementParams {
     float maxSpeed = 70.f;   
 };
+
+struct PlayerHealth {
+    int   max     = 5;
+    int   current = 5;
+
+    float damageCooldown   = 0.0f;   
+    float damageInterval   = 0.7f;   
+};

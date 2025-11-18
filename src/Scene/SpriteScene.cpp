@@ -20,6 +20,8 @@
 #include "Systems/EnemySpawnSystem.h"
 #include "Systems/ProximitySpawnSystem.h"
 #include "Systems/ScriptMovementSystem.h"
+#include "Systems/HealthSystem.h"
+#include "Systems/HudSystem.h"
 
 static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
 static const char* HERO_PATH = "assets/sprites/mer_8_chars1.png";
@@ -59,12 +61,14 @@ void SpriteScene::onSetup() {
     addSystem(new EnemySpawnSystem());
     addSystem(new ProximitySpawnSystem());
     addSystem(new ScriptMovementSystem());
+    addSystem(new HealthSystem()); 
     addSystem(new AnimationSystem());  
     addSystem(new CameraFollowSystem());
     addSystem(new CameraZoomSystem());
     addSystem(new TilemapRenderSystem());
     addSystem(new DebugRenderSystem());
     addSystem(new RenderSystem());
+    addSystem(new HudSystem()); 
 
     // --- TILEMAP: capa base ---
     {
@@ -121,6 +125,7 @@ void SpriteScene::onSetup() {
         });
         r.emplace<BoundsClampComponent>(e, BoundsClampComponent{8.0f});
         r.emplace<PlayerTag>(e);
+        r.emplace<PlayerHealth>(e, PlayerHealth{5, 5});
     }
 
     // crea spawner con 3 waves, cada una con patrón distinto
