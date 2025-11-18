@@ -22,6 +22,8 @@
 #include "Systems/ScriptMovementSystem.h"
 #include "Systems/HealthSystem.h"
 #include "Systems/HudSystem.h"
+#include "Systems/ProjectileSystem.h"
+#include "Systems/ShootingSystem.h"
 
 static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
 static const char* HERO_PATH = "assets/sprites/mer_8_chars1.png";
@@ -55,9 +57,11 @@ void SpriteScene::onSetup() {
     addSystem(new AutotileSystem());    
     addSystem(new IntGridBakeSystem()); 
     addSystem(new InputSystem());
+    addSystem(new ShootingSystem());
     // addSystem(new EnemyAISystem());
     addSystem(new MovementSystem());
     addSystem(new GridCollisionSystem());
+    addSystem(new ProjectileSystem());
     addSystem(new EnemySpawnSystem());
     addSystem(new ProximitySpawnSystem());
     addSystem(new ScriptMovementSystem());
@@ -125,7 +129,7 @@ void SpriteScene::onSetup() {
         });
         r.emplace<BoundsClampComponent>(e, BoundsClampComponent{8.0f});
         r.emplace<PlayerTag>(e);
-        r.emplace<PlayerHealth>(e, PlayerHealth{5, 5});
+        r.emplace<PlayerHealth>(e, PlayerHealth{10, 10});
     }
 
     // crea spawner con 3 waves, cada una con patrón distinto

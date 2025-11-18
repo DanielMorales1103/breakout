@@ -70,4 +70,19 @@ void RenderSystem::render() {
             DrawTexturePro(tex, src, dest, origin, t.rotation, WHITE);
         });
     }
+
+    // --- Proyectiles ---
+    {
+        auto view = scene->r.view<ProjectileTag, TransformComponent>();
+        view.each([&](auto, TransformComponent& tr) {
+
+            // Aplicar cámara igual que a los sprites
+            float screenX = (tr.position.x - camPos.x) * camZoom;
+            float screenY = (tr.position.y - camPos.y) * camZoom;
+
+            float radius = 4.0f * camZoom;  // por si quieres que el zoom también afecte a la bala
+
+            DrawCircleV(Vector2{screenX, screenY}, radius, WHITE);
+        });
+    }
 }

@@ -244,3 +244,11 @@ struct PlayerHealth {
     float damageCooldown   = 0.0f;   
     float damageInterval   = 0.7f;   
 };
+
+struct ProjectileTag {};
+
+struct ProjectileData {
+    float speed = 250.0f;  
+    float lifetime = 1.2f; 
+    float age = 0.0f;
+};

@@ -121,6 +121,12 @@
 },
 {
   "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
+  "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\ProjectileSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\ProjectileSystem.cpp\"",
+  "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/ProjectileSystem.cpp",
+  "output": "CMakeFiles/GAME.dir/src/Systems/ProjectileSystem.cpp.obj"
+},
+{
+  "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
   "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\ProximitySpawnSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\ProximitySpawnSystem.cpp\"",
   "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/ProximitySpawnSystem.cpp",
   "output": "CMakeFiles/GAME.dir/src/Systems/ProximitySpawnSystem.cpp.obj"
@@ -136,6 +142,12 @@
   "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\ScriptMovementSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\ScriptMovementSystem.cpp\"",
   "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/ScriptMovementSystem.cpp",
   "output": "CMakeFiles/GAME.dir/src/Systems/ScriptMovementSystem.cpp.obj"
+},
+{
+  "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
+  "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\ShootingSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\ShootingSystem.cpp\"",
+  "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/ShootingSystem.cpp",
+  "output": "CMakeFiles/GAME.dir/src/Systems/ShootingSystem.cpp.obj"
 },
 {
   "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
