@@ -252,3 +252,7 @@ struct ProjectileData {
     float lifetime = 1.2f; 
     float age = 0.0f;
 };
+
+struct GameState {
+    bool gameOver = false;
+};

@@ -24,6 +24,9 @@
 #include "Systems/HudSystem.h"
 #include "Systems/ProjectileSystem.h"
 #include "Systems/ShootingSystem.h"
+#include "Systems/ProjectileHitSystem.h"
+#include "Systems/GameOverSystem.h"
+#include "Systems/VictorySystem.h"
 
 static const char* BG_PATH = "assets/backgrounds/fondoAtl.png";
 static const char* HERO_PATH = "assets/sprites/mer_8_chars1.png";
@@ -62,10 +65,13 @@ void SpriteScene::onSetup() {
     addSystem(new MovementSystem());
     addSystem(new GridCollisionSystem());
     addSystem(new ProjectileSystem());
+    addSystem(new ProjectileHitSystem());
     addSystem(new EnemySpawnSystem());
     addSystem(new ProximitySpawnSystem());
     addSystem(new ScriptMovementSystem());
     addSystem(new HealthSystem()); 
+    addSystem(new GameOverSystem());
+    addSystem(new VictorySystem());
     addSystem(new AnimationSystem());  
     addSystem(new CameraFollowSystem());
     addSystem(new CameraZoomSystem());
@@ -103,6 +109,12 @@ void SpriteScene::onSetup() {
             /*padding=*/2,    
             /*enabled=*/true  
         });
+    }
+
+    // ---------- ENTIDAD GLOBAL: GameState ----------
+    {
+        auto g = r.create();
+        r.emplace<GameState>(g, GameState{ false });
     }
 
     // ---------- ENTIDAD: Player (morado sin sombra: columnas 7–9, filas 5–8) ----------

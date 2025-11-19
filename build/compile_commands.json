@@ -79,6 +79,12 @@
 },
 {
   "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
+  "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\GameOverSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\GameOverSystem.cpp\"",
+  "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/GameOverSystem.cpp",
+  "output": "CMakeFiles/GAME.dir/src/Systems/GameOverSystem.cpp.obj"
+},
+{
+  "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
   "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\GridCollisionSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\GridCollisionSystem.cpp\"",
   "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/GridCollisionSystem.cpp",
   "output": "CMakeFiles/GAME.dir/src/Systems/GridCollisionSystem.cpp.obj"
@@ -121,6 +127,12 @@
 },
 {
   "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
+  "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\ProjectileHitSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\ProjectileHitSystem.cpp\"",
+  "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/ProjectileHitSystem.cpp",
+  "output": "CMakeFiles/GAME.dir/src/Systems/ProjectileHitSystem.cpp.obj"
+},
+{
+  "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
   "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\ProjectileSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\ProjectileSystem.cpp\"",
   "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/ProjectileSystem.cpp",
   "output": "CMakeFiles/GAME.dir/src/Systems/ProjectileSystem.cpp.obj"
@@ -160,6 +172,12 @@
   "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\TilemapRenderSystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\TilemapRenderSystem.cpp\"",
   "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/TilemapRenderSystem.cpp",
   "output": "CMakeFiles/GAME.dir/src/Systems/TilemapRenderSystem.cpp.obj"
+},
+{
+  "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",
+  "command": "C:\\mingw64\\bin\\c++.exe -DGRAPHICS_API_OPENGL_33 -DNO_FONT_AWESOME -DPLATFORM_DESKTOP @CMakeFiles/GAME.dir/includes_CXX.rsp -std=c++23 -o CMakeFiles\\GAME.dir\\src\\Systems\\VictorySystem.cpp.obj -c \"C:\\Users\\pc\\Documents\\uvg\\sem 10\\GameEng\\breakout\\src\\Systems\\VictorySystem.cpp\"",
+  "file": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/src/Systems/VictorySystem.cpp",
+  "output": "CMakeFiles/GAME.dir/src/Systems/VictorySystem.cpp.obj"
 },
 {
   "directory": "C:/Users/pc/Documents/uvg/sem 10/GameEng/breakout/build",

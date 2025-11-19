@@ -22,6 +22,38 @@ static void DrawSprite(const Texture2D& tex,
 void RenderSystem::update() { }
 
 void RenderSystem::render() {
+    if (scene->gameOver) {
+        DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), BLACK);
+
+        const char* msg = "GAME OVER";
+        int fontSize = 40;
+        int sw = GetScreenWidth();
+        int sh = GetScreenHeight();
+        int tw = MeasureText(msg, fontSize);
+
+        DrawText(msg, sw/2 - tw/2, sh/2 - fontSize/2, fontSize, RED);
+        return; 
+    }
+
+    if (scene->victory) {
+        DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), BLACK);
+
+        const char* msg = "VICTORIA";
+        int fontSize = 40;
+        int sw = GetScreenWidth();
+        int sh = GetScreenHeight();
+        int tw = MeasureText(msg, fontSize);
+
+        DrawText(msg, sw/2 - tw/2, sh/2 - fontSize/2, fontSize, GREEN);
+
+        const char* sub = "Has derrotado todas las oleadas";
+        int fontSize2 = 20;
+        int tw2 = MeasureText(sub, fontSize2);
+        DrawText(sub, sw/2 - tw2/2, sh/2 + 40, fontSize2, RAYWHITE);
+
+        return; // no dibujamos nada más
+    }
+
     {
         auto bgView = scene->r.view<SpriteComponent, BackgroundTag>();
         bgView.each([&](SpriteComponent& s) {

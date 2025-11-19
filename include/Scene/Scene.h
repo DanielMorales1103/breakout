@@ -15,6 +15,8 @@ public:
     void addSystem(System* system);
 
     entt::registry r;
+    bool gameOver = false;
+    bool victory = false;
 
 protected:
     virtual void onSetup() {}
